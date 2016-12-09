@@ -484,7 +484,7 @@ class Animation {
     advance(frameCount, object) {
         const nextFrame = this.currentFrame + frameCount;
         const animators = this.animators;
-        for (const animatorName in animators) {
+        for (let animatorName in animators) {
             if (animators.hasOwnProperty(animatorName)) {
                 animators[animatorName].apply(object, nextFrame);
             }
@@ -650,7 +650,7 @@ class NineGrid extends Widget {
     }
     render(renderer) {
         renderer.save();
-        for (const part of this.getParts()) {
+        for (let part of this.getParts()) {
             renderer.renderTexture(this.texture, part.target.left, part.target.top, part.target.width, part.target.height, part.crop.left, part.crop.top, part.crop.width, part.crop.height);
         }
         renderer.restore();
@@ -793,7 +793,7 @@ class TaskList {
         }
         const savedCurrent = TaskList.current;
         TaskList.current = this;
-        for (const task of this.tasks) {
+        for (let task of this.tasks) {
             task.update(delta);
         }
         this.tasks = this.tasks.filter(task => !task.completed);
