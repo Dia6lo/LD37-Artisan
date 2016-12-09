@@ -3,14 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{223C48E8-41F5-49FD-81E8-428F65D9B5F6}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{86BBEB79-9016-4F9D-B905-D271B367DEAD}"
-	ProjectSection(SolutionItems) = preProject
-		global.json = global.json
-	EndProjectSection
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "IdealWaffle", "src\IdealWaffle\IdealWaffle.xproj", "{0252744F-E256-484D-A831-87E3C4CF32DA}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "IdealWaffle", "IdealWaffle\IdealWaffle.xproj", "{0252744F-E256-484D-A831-87E3C4CF32DA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25,8 +18,5 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{0252744F-E256-484D-A831-87E3C4CF32DA} = {223C48E8-41F5-49FD-81E8-428F65D9B5F6}
 	EndGlobalSection
 EndGlobal
