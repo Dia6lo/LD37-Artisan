@@ -148,6 +148,7 @@ class Room extends Widget {
     }
     update(delta) {
         this.updateCharacterPosition();
+        this.updateItemHighlights();
         super.update(delta);
     }
     updateCharacterPosition() {
@@ -169,6 +170,12 @@ class Room extends Widget {
         if (this.mousePosition) {
             this.debug.text += ` ${this.toStringV2(this.mousePosition)}  ${this
                 .toStringV2(this.transformer.toCartesian(this.mousePosition))}`;
+        }
+    }
+    updateItemHighlights() {
+        for (let child of this.itemLayer.children) {
+            const item = child;
+            item.highlighted = this.characterPosition.subtract(item.cartesianPosition).length <= 3;
         }
     }
     getVelocityDirection(key) {
@@ -202,12 +209,21 @@ class Item extends Sprite {
         super();
         this.cartesianPosition = cartesianPosition;
         this.transformer = transformer;
+        this.highlighted = false;
         this.texture = texture;
         this.pivot = new Vector2(0.5, 1);
         this.size = new Vector2(32, 32);
     }
     update(delta) {
         this.position = this.transformer.toIsometric(this.cartesianPosition);
+    }
+    render(renderer) {
+        renderer.save();
+        if (this.highlighted) {
+            renderer.context.globalCompositeOperation = "color-burn";
+        }
+        super.render(renderer);
+        renderer.restore();
     }
 }
 //# sourceMappingURL=app.js.map

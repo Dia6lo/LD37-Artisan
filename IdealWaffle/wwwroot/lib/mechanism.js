@@ -1111,6 +1111,9 @@ class Vector2 {
         this.x = x;
         this.y = y;
     }
+    get length() {
+        return Math.sqrt(this.x * this.x + this.y * this.y);
+    }
     add(value) {
         return this.combine(value, (lhs, rhs) => lhs + rhs);
     }

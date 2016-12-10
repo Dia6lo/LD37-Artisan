@@ -27,6 +27,7 @@ class Room extends Widget {
 
     update(delta: number): void {
         this.updateCharacterPosition();
+        this.updateItemHighlights();
         super.update(delta);
     }
 
@@ -49,6 +50,13 @@ class Room extends Widget {
         if (this.mousePosition) {
             this.debug.text += ` ${this.toStringV2(this.mousePosition)}  ${this
                 .toStringV2(this.transformer.toCartesian(this.mousePosition))}`;
+        }
+    }
+
+    private updateItemHighlights() {
+        for (let child of this.itemLayer.children) {
+            const item = child as Item;
+            item.highlighted = this.characterPosition.subtract(item.cartesianPosition).length <= 3;
         }
     }
 
@@ -86,6 +94,8 @@ const enum ItemType {
 }
 
 class Item extends Sprite {
+    highlighted = false;
+
     constructor(public cartesianPosition: Vector2, private readonly transformer: PositionTransformer, texture: Texture) {
         super();
         this.texture = texture;
@@ -95,5 +105,14 @@ class Item extends Sprite {
 
     update(delta: number): void {
         this.position = this.transformer.toIsometric(this.cartesianPosition);
+    }
+
+    render(renderer: Renderer): void {
+        renderer.save();
+        if (this.highlighted) {
+            renderer.context.globalCompositeOperation = "color-burn";
+        }
+        super.render(renderer);
+        renderer.restore();
     }
 }

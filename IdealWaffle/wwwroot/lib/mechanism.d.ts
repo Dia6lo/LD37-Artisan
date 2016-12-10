@@ -221,7 +221,7 @@ declare class Renderer {
     view: HTMLCanvasElement;
     backgroundColor: Color;
     vectorGraphics: VectorGraphics;
-    private readonly context;
+    readonly context: CanvasRenderingContext2D;
     constructor(width: number, height: number);
     width: number;
     height: number;
@@ -598,6 +598,7 @@ declare class Vector2 {
     y: number;
     constructor(x?: number, y?: number);
     set(x: number, y: number): void;
+    readonly length: number;
     add(value: Vector2 | number): Vector2;
     subtract(value: Vector2 | number): Vector2;
     multiply(value: Vector2 | number): Vector2;
