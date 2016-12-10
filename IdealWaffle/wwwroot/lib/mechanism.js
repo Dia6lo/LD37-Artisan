@@ -1,126 +1,3 @@
-class RenderObject {
-    constructor() {
-        this.children = [];
-        this.animations = new AnimationCollection();
-        this.tasks = new TaskList();
-    }
-    addChild(container) {
-        this.children.push(container);
-        container.parent = this;
-    }
-    removeChild(container) {
-        const index = this.children.indexOf(container);
-        if (index === -1) {
-            return false;
-        }
-        this.children.splice(index, 1);
-        container.parent = undefined;
-        return true;
-    }
-    removeFromParent() {
-        if (!this.parent) {
-            return;
-        }
-        this.parent.removeChild(this);
-    }
-    render(renderer) {
-        for (let child of this.children) {
-            renderer.render(child);
-        }
-    }
-    beforeRender(renderer) { }
-    afterRender(renderer) { }
-    update(delta) {
-        if (this.currentAnimation) {
-            const goto = this.currentAnimation.advance(1, this);
-            if (goto) {
-                if (goto.animation) {
-                    this.runAnimation(goto.animation, goto.frame);
-                }
-                else {
-                    this.currentAnimation.run(goto.frame);
-                }
-            }
-        }
-        this.tasks.update(delta);
-        for (let child of this.children) {
-            child.update(delta);
-        }
-    }
-    runAnimation(name, frame = 0) {
-        this.currentAnimation = this.animations.get(name);
-        this.currentAnimation.run(frame);
-    }
-    tryRunAnimation(name, frame = 0) {
-        const animation = this.animations.tryGet(name);
-        if (animation) {
-            this.currentAnimation = animation;
-            this.currentAnimation.run(frame);
-        }
-    }
-    runChildAnimation(name) {
-        for (let child of this.children) {
-            child.tryRunAnimation(name);
-        }
-    }
-}
-class Widget extends RenderObject {
-    constructor() {
-        super(...arguments);
-        this.children = [];
-        this.position = Vector2.zero;
-        this.scale = Vector2.one;
-        this.rotation = 0;
-        this.pivot = Vector2.zero;
-        this.size = new Vector2(100, 100);
-        this.opacity = 1;
-    }
-    beforeRender(renderer) {
-        renderer.save();
-        renderer.globalAlpha *= this.opacity;
-        renderer.translate(this.position.x, this.position.y);
-        renderer.rotate(this.rotation);
-        const offset = this.pivot
-            .multiply(new Vector2(this.width, this.height));
-        renderer.translate(-offset.x, -offset.y);
-        renderer.scale(this.scale.x, this.scale.y);
-    }
-    afterRender(renderer) {
-        renderer.restore();
-    }
-    get x() {
-        return this.position.x;
-    }
-    set x(value) {
-        this.position.x = value;
-    }
-    get y() {
-        return this.position.y;
-    }
-    set y(value) {
-        this.position.y = value;
-    }
-    get width() {
-        return this.size.x;
-    }
-    set width(value) {
-        this.size.x = value;
-    }
-    get height() {
-        return this.size.y;
-    }
-    set height(value) {
-        this.size.y = value;
-    }
-    addChild(widget) {
-        super.addChild(widget);
-    }
-}
-Widget.positionAnimator = () => new Vector2Animator("position");
-Widget.scaleAnimator = () => new Vector2Animator("scale");
-Widget.pivotAnimator = () => new Vector2Animator("pivot");
-Widget.sizeAnimator = () => new Vector2Animator("size");
-Widget.rotationAnimator = () => new NumberAnimator("rotation");
 class Application {
     constructor(width = 800, height = 600) {
         this.fps = 0;
@@ -338,9 +215,12 @@ class Input {
         this.keyEventQueue.push({ key: key, down: down });
     }
     processPendingKeyEvents() {
+        let keyEventQueue = this.keyEventQueue;
+        this.keyEventQueue = [];
+        keyEventQueue = keyEventQueue.reverse();
         this.previousKeyState = this.currentKeyState.slice();
-        while (this.keyEventQueue.length > 0) {
-            const event = this.keyEventQueue.pop();
+        while (keyEventQueue.length > 0) {
+            const event = keyEventQueue.pop();
             this.currentKeyState[event.key] = event.down;
         }
     }
@@ -604,6 +484,129 @@ class KeyFrame {
         this.interpolation = interpolation;
     }
 }
+class RenderObject {
+    constructor() {
+        this.children = [];
+        this.animations = new AnimationCollection();
+        this.tasks = new TaskList();
+    }
+    addChild(container) {
+        this.children.push(container);
+        container.parent = this;
+    }
+    removeChild(container) {
+        const index = this.children.indexOf(container);
+        if (index === -1) {
+            return false;
+        }
+        this.children.splice(index, 1);
+        container.parent = undefined;
+        return true;
+    }
+    removeFromParent() {
+        if (!this.parent) {
+            return;
+        }
+        this.parent.removeChild(this);
+    }
+    render(renderer) {
+        for (let child of this.children) {
+            renderer.render(child);
+        }
+    }
+    beforeRender(renderer) { }
+    afterRender(renderer) { }
+    update(delta) {
+        if (this.currentAnimation) {
+            const goto = this.currentAnimation.advance(1, this);
+            if (goto) {
+                if (goto.animation) {
+                    this.runAnimation(goto.animation, goto.frame);
+                }
+                else {
+                    this.currentAnimation.run(goto.frame);
+                }
+            }
+        }
+        this.tasks.update(delta);
+        for (let child of this.children) {
+            child.update(delta);
+        }
+    }
+    runAnimation(name, frame = 0) {
+        this.currentAnimation = this.animations.get(name);
+        this.currentAnimation.run(frame);
+    }
+    tryRunAnimation(name, frame = 0) {
+        const animation = this.animations.tryGet(name);
+        if (animation) {
+            this.currentAnimation = animation;
+            this.currentAnimation.run(frame);
+        }
+    }
+    runChildAnimation(name) {
+        for (let child of this.children) {
+            child.tryRunAnimation(name);
+        }
+    }
+}
+class Widget extends RenderObject {
+    constructor() {
+        super(...arguments);
+        this.children = [];
+        this.position = Vector2.zero;
+        this.scale = Vector2.one;
+        this.rotation = 0;
+        this.pivot = Vector2.zero;
+        this.size = new Vector2(100, 100);
+        this.opacity = 1;
+    }
+    beforeRender(renderer) {
+        renderer.save();
+        renderer.globalAlpha *= this.opacity;
+        renderer.translate(this.position.x, this.position.y);
+        renderer.rotate(this.rotation);
+        const offset = this.pivot
+            .multiply(new Vector2(this.width, this.height));
+        renderer.translate(-offset.x, -offset.y);
+        renderer.scale(this.scale.x, this.scale.y);
+    }
+    afterRender(renderer) {
+        renderer.restore();
+    }
+    get x() {
+        return this.position.x;
+    }
+    set x(value) {
+        this.position.x = value;
+    }
+    get y() {
+        return this.position.y;
+    }
+    set y(value) {
+        this.position.y = value;
+    }
+    get width() {
+        return this.size.x;
+    }
+    set width(value) {
+        this.size.x = value;
+    }
+    get height() {
+        return this.size.y;
+    }
+    set height(value) {
+        this.size.y = value;
+    }
+    addChild(widget) {
+        super.addChild(widget);
+    }
+}
+Widget.positionAnimator = () => new Vector2Animator("position");
+Widget.scaleAnimator = () => new Vector2Animator("scale");
+Widget.pivotAnimator = () => new Vector2Animator("pivot");
+Widget.sizeAnimator = () => new Vector2Animator("size");
+Widget.rotationAnimator = () => new NumberAnimator("rotation");
 class Label extends Widget {
     constructor(text) {
         super();

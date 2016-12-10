@@ -1,41 +1,3 @@
-declare class RenderObject {
-    children: RenderObject[];
-    parent?: RenderObject;
-    animations: AnimationCollection;
-    tasks: TaskList;
-    currentAnimation: Animation;
-    addChild(container: RenderObject): void;
-    removeChild(container: RenderObject): boolean;
-    removeFromParent(): void;
-    render(renderer: Renderer): void;
-    beforeRender(renderer: Renderer): void;
-    afterRender(renderer: Renderer): void;
-    update(delta: number): void;
-    runAnimation(name: string, frame?: number): void;
-    tryRunAnimation(name: string, frame?: number): void;
-    runChildAnimation(name: string): void;
-}
-declare class Widget extends RenderObject {
-    children: Widget[];
-    position: Vector2;
-    scale: Vector2;
-    rotation: number;
-    pivot: Vector2;
-    size: Vector2;
-    opacity: number;
-    beforeRender(renderer: Renderer): void;
-    afterRender(renderer: Renderer): void;
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-    addChild(widget: Widget): void;
-    static positionAnimator: () => Vector2Animator<RenderObject>;
-    static scaleAnimator: () => Vector2Animator<RenderObject>;
-    static pivotAnimator: () => Vector2Animator<RenderObject>;
-    static sizeAnimator: () => Vector2Animator<RenderObject>;
-    static rotationAnimator: () => NumberAnimator<RenderObject>;
-}
 declare class Application {
     view: HTMLDivElement;
     renderer: Renderer;
@@ -334,6 +296,44 @@ declare class KeyFrame<T> {
     value: T;
     interpolation: Interpolation;
     constructor(value: T, interpolation?: Interpolation);
+}
+declare class RenderObject {
+    children: RenderObject[];
+    parent?: RenderObject;
+    animations: AnimationCollection;
+    tasks: TaskList;
+    currentAnimation: Animation;
+    addChild(container: RenderObject): void;
+    removeChild(container: RenderObject): boolean;
+    removeFromParent(): void;
+    render(renderer: Renderer): void;
+    beforeRender(renderer: Renderer): void;
+    afterRender(renderer: Renderer): void;
+    update(delta: number): void;
+    runAnimation(name: string, frame?: number): void;
+    tryRunAnimation(name: string, frame?: number): void;
+    runChildAnimation(name: string): void;
+}
+declare class Widget extends RenderObject {
+    children: Widget[];
+    position: Vector2;
+    scale: Vector2;
+    rotation: number;
+    pivot: Vector2;
+    size: Vector2;
+    opacity: number;
+    beforeRender(renderer: Renderer): void;
+    afterRender(renderer: Renderer): void;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    addChild(widget: Widget): void;
+    static positionAnimator: () => Vector2Animator<RenderObject>;
+    static scaleAnimator: () => Vector2Animator<RenderObject>;
+    static pivotAnimator: () => Vector2Animator<RenderObject>;
+    static sizeAnimator: () => Vector2Animator<RenderObject>;
+    static rotationAnimator: () => NumberAnimator<RenderObject>;
 }
 declare class Label extends Widget {
     text: string;
