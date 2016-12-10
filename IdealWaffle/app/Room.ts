@@ -48,6 +48,8 @@ class Room extends Widget {
         for (let key of pressed) {
             direction = direction.add(this.getVelocityDirection(key));
         }
+        direction.x = Math.abs(direction.x) === 1 ? direction.x * 0.75 : direction.x;
+        direction.y = Math.abs(direction.y) === 1 ? direction.y * 0.75 : direction.y;
         this.characterVelocity = direction.multiply(this.characterSpeed);
         this.characterPosition.x = Math.clamp(this.characterPosition.x + this.characterVelocity.x, 0, this.floorBounds.x);
         this.characterPosition.y = Math.clamp(this.characterPosition.y + this.characterVelocity.y, 0, this.floorBounds.y);
@@ -58,13 +60,13 @@ class Room extends Widget {
     private getVelocityDirection(key: Key) {
         switch (key) {
             case Key.Left:
-                return new Vector2(-1, 0);
+                return new Vector2(-0.5, 0.5);
             case Key.Right:
-                return new Vector2(1, 0);
+                return new Vector2(0.5, -0.5);
             case Key.Up:
-                return new Vector2(0, -1);
+                return new Vector2(-0.5, -0.5);
             case Key.Down:
-                return new Vector2(0, 1);
+                return new Vector2(0.5, 0.5);
             default:
                 return Vector2.zero;
         }
