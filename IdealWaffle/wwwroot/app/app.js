@@ -175,7 +175,7 @@ class Room extends Widget {
     updateItemHighlights() {
         for (let child of this.itemLayer.children) {
             const item = child;
-            item.highlighted = this.characterPosition.subtract(item.cartesianPosition).length <= 3;
+            item.highlighted = this.characterPosition.subtract(item.cartesianPosition).length <= 5;
         }
     }
     getVelocityDirection(key) {
@@ -195,7 +195,7 @@ class Room extends Widget {
     createItem(type) {
         switch (type) {
             case 0:
-                return new Item(new Vector2(5, 10), this.transformer, Texture.fromImage("assets/Apple.png"));
+                return new Item(new Vector2(5, 10), this.transformer, Texture.fromImage("assets/Apple.png"), "Apple");
             default:
                 throw "Error creating item";
         }
@@ -205,14 +205,19 @@ class Room extends Widget {
     }
 }
 class Item extends Sprite {
-    constructor(cartesianPosition, transformer, texture) {
+    constructor(cartesianPosition, transformer, texture, name) {
         super();
         this.cartesianPosition = cartesianPosition;
         this.transformer = transformer;
         this.highlighted = false;
+        this.tooltip = new Label();
         this.texture = texture;
         this.pivot = new Vector2(0.5, 1);
         this.size = new Vector2(32, 32);
+        this.tooltip.text = name;
+        this.tooltip.pivot = new Vector2(0.5, 1);
+        this.tooltip.horizontalTextAlignment = TextAlignment.Center;
+        this.tooltip.verticalTextAlignment = TextAlignment.Center;
     }
     update(delta) {
         this.position = this.transformer.toIsometric(this.cartesianPosition);
@@ -220,6 +225,18 @@ class Item extends Sprite {
     render(renderer) {
         renderer.save();
         if (this.highlighted) {
+            const fontSize = 32;
+            renderer.context.font = `${fontSize}px tooltipFont`;
+            const measure = new Vector2(renderer.measureText(this.tooltip.text), fontSize);
+            this.tooltip.size = measure.add(new Vector2(10));
+            this.tooltip.position = new Vector2(this.width / 2, -5);
+            renderer.save();
+            renderer.vectorGraphics
+                .strokeStyle(2)
+                .fillStyle(Color.wheat)
+                .drawRoundedRect(this.tooltip.x - this.tooltip.width / 2, this.tooltip.y - this.tooltip.height * 0.9, this.tooltip.width, this.tooltip.height * 1.2, 5);
+            renderer.restore();
+            renderer.render(this.tooltip);
             renderer.context.globalCompositeOperation = "color-burn";
         }
         super.render(renderer);

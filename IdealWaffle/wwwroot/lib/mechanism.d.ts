@@ -322,6 +322,7 @@ declare class Widget extends RenderObject {
     pivot: Vector2;
     size: Vector2;
     opacity: number;
+    visible: boolean;
     beforeRender(renderer: Renderer): void;
     afterRender(renderer: Renderer): void;
     x: number;

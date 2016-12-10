@@ -560,8 +560,12 @@ class Widget extends RenderObject {
         this.pivot = Vector2.zero;
         this.size = new Vector2(100, 100);
         this.opacity = 1;
+        this.visible = true;
     }
     beforeRender(renderer) {
+        if (!this.visible) {
+            return;
+        }
         renderer.save();
         renderer.globalAlpha *= this.opacity;
         renderer.translate(this.position.x, this.position.y);
