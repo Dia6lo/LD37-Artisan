@@ -13,7 +13,7 @@ window.onload = () => {
     document.body.appendChild(game.view);
     game.run();
 };
-class RoomBounds {
+class PositionTransformer {
     constructor() {
         this.cartesianBounds = new Vector2(100, 100);
         this.obstacles = [
@@ -127,19 +127,30 @@ class Room extends Widget {
         super();
         this.room = Sprite.fromImage("assets/Room.png");
         this.character = Sprite.fromImage("assets/Character.png");
-        this.bounds = new RoomBounds();
+        this.transformer = new PositionTransformer();
         this.characterPosition = new Vector2(0, 0);
         this.characterVelocity = Vector2.zero;
         this.characterSpeed = 1;
         this.debug = new Label();
+        this.itemLayer = new Widget();
         this.room.size = new Vector2(886, 554);
         this.character.size = new Vector2(23, 26);
         this.character.pivot = new Vector2(0.5, 1);
         this.addChild(this.room);
+        this.addChild(this.itemLayer);
         this.addChild(this.character);
-        this.debug.position = new Vector2(100, 100);
+        document.body.onmousemove = ev => {
+            this.mousePosition = new Vector2(ev.x - game.renderer.view.offsetLeft, ev.y - game.renderer.view.offsetTop);
+        };
+        this.addChild(this.debug);
+        const apple = this.createItem(0);
+        this.itemLayer.addChild(apple);
     }
     update(delta) {
+        this.updateCharacterPosition();
+        super.update(delta);
+    }
+    updateCharacterPosition() {
         const controls = [47, 48, 45, 46];
         const pressed = controls.filter(key => game.input.isKeyPressed(key));
         let direction = Vector2.zero;
@@ -149,10 +160,16 @@ class Room extends Widget {
         direction.x = Math.abs(direction.x) === 1 ? direction.x * 0.75 : direction.x;
         direction.y = Math.abs(direction.y) === 1 ? direction.y * 0.75 : direction.y;
         this.characterVelocity = direction.multiply(this.characterSpeed);
-        this.characterPosition = this.bounds.moveInCartesian(this.characterPosition, this.characterPosition.add(this.characterVelocity));
-        this.character.position = this.bounds.moveInIsometric(this.character.position, this.bounds.toIsometric(this.characterPosition));
-        this.characterPosition = this.bounds.toCartesian(this.character.position);
+        this.characterPosition = this.transformer
+            .moveInCartesian(this.characterPosition, this.characterPosition.add(this.characterVelocity));
+        this.character.position = this.transformer
+            .moveInIsometric(this.character.position, this.transformer.toIsometric(this.characterPosition));
+        this.characterPosition = this.transformer.toCartesian(this.character.position);
         this.debug.text = `${this.toStringV2(this.characterPosition)} ${this.toStringV2(this.character.position)}`;
+        if (this.mousePosition) {
+            this.debug.text += ` ${this.toStringV2(this.mousePosition)}  ${this
+                .toStringV2(this.transformer.toCartesian(this.mousePosition))}`;
+        }
     }
     getVelocityDirection(key) {
         switch (key) {
@@ -168,14 +185,29 @@ class Room extends Widget {
                 return Vector2.zero;
         }
     }
+    createItem(type) {
+        switch (type) {
+            case 0:
+                return new Item(new Vector2(5, 10), this.transformer, Texture.fromImage("assets/Apple.png"));
+            default:
+                throw "Error creating item";
+        }
+    }
     toStringV2(vector) {
         return `${vector.x} ${vector.y}`;
     }
-    twoDToIso(pt) {
-        const tempPt = new Vector2(0, 0);
-        tempPt.x = pt.x - pt.y;
-        tempPt.y = (pt.x + pt.y) / 2;
-        return (tempPt);
+}
+class Item extends Sprite {
+    constructor(cartesianPosition, transformer, texture) {
+        super();
+        this.cartesianPosition = cartesianPosition;
+        this.transformer = transformer;
+        this.texture = texture;
+        this.pivot = new Vector2(0.5, 1);
+        this.size = new Vector2(32, 32);
+    }
+    update(delta) {
+        this.position = this.transformer.toIsometric(this.cartesianPosition);
     }
 }
 //# sourceMappingURL=app.js.map
