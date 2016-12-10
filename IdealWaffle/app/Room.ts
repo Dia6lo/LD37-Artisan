@@ -1,9 +1,9 @@
 class RoomBounds {
     orthogonalBounds = new Vector2(100, 100);
-    isometricTop = new Vector2(440, 220);
-    isometricBottom = new Vector2(440, 640);
-    isometricLeft = new Vector2(50, 430);
-    isometricRight = new Vector2(830, 430);
+    isometricTop = new Vector2(432, 204);
+    isometricBottom = new Vector2(432, 584);
+    isometricLeft = new Vector2(48, 394);
+    isometricRight = new Vector2(816, 394);
     xModifier: number;
     yModifier: number;
 
@@ -31,7 +31,7 @@ class Room extends Widget {
 
     constructor() {
         super();
-        this.room.size = new Vector2(900, 600);
+        this.room.size = new Vector2(886, 554);
         this.character.size = new Vector2(23, 26);
         this.character.position = new Vector2(450, 220);
         this.character.pivot = new Vector2(0.5, 1);

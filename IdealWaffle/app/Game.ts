@@ -1,9 +1,10 @@
 ﻿class Game extends Application {
     constructor() {
-        super(900, 600);
+        super(886, 554);
         this.renderer.backgroundColor = Color.skyblue;
         const root = new Room();
         this.root = root;
+        this.renderer.imageSmoothing = false;
     }
 }
 

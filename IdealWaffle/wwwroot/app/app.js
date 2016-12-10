@@ -1,9 +1,10 @@
 class Game extends Application {
     constructor() {
-        super(900, 600);
+        super(886, 554);
         this.renderer.backgroundColor = Color.skyblue;
         const root = new Room();
         this.root = root;
+        this.renderer.imageSmoothing = false;
     }
 }
 var game;
@@ -15,10 +16,10 @@ window.onload = () => {
 class RoomBounds {
     constructor() {
         this.orthogonalBounds = new Vector2(100, 100);
-        this.isometricTop = new Vector2(440, 220);
-        this.isometricBottom = new Vector2(440, 640);
-        this.isometricLeft = new Vector2(50, 430);
-        this.isometricRight = new Vector2(830, 430);
+        this.isometricTop = new Vector2(432, 204);
+        this.isometricBottom = new Vector2(432, 584);
+        this.isometricLeft = new Vector2(48, 394);
+        this.isometricRight = new Vector2(816, 394);
         this.xModifier = (this.isometricRight.x - this.isometricLeft.x) / this.orthogonalBounds.x / 2;
         this.yModifier = (this.isometricBottom.y - this.isometricTop.y) / this.orthogonalBounds.y / 2;
     }
@@ -39,7 +40,7 @@ class Room extends Widget {
         this.characterSpeed = 1;
         this.debug = new Label();
         this.bounds = new RoomBounds();
-        this.room.size = new Vector2(900, 600);
+        this.room.size = new Vector2(886, 554);
         this.character.size = new Vector2(23, 26);
         this.character.position = new Vector2(450, 220);
         this.character.pivot = new Vector2(0.5, 1);
