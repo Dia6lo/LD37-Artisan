@@ -591,6 +591,7 @@ declare class Rectangle {
     readonly bottom: number;
     readonly width: number;
     readonly height: number;
+    contains(value: Vector2): boolean;
 }
 declare class Vector2 {
     x: number;

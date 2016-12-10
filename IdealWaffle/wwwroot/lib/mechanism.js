@@ -1098,6 +1098,9 @@ class Rectangle {
     get height() {
         return this.max.y - this.min.y;
     }
+    contains(value) {
+        return (value.x >= this.min.x) && (value.y >= this.min.y) && (value.x < this.max.x) && (value.y < this.max.y);
+    }
 }
 class Vector2 {
     constructor(x = 0, y = 0) {
