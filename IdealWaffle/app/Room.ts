@@ -2,7 +2,7 @@ class Room extends Widget {
     private room = Sprite.fromImage("assets/Room.png");
     private character = Sprite.fromImage("assets/Character.png");
     private transformer = new PositionTransformer();
-    private characterPosition = new Vector2(0, 0);
+    private characterPosition = new Vector2(50, 50);
     private characterVelocity = Vector2.zero;
     private characterSpeed = 1;
     private mousePosition: Vector2;
@@ -20,6 +20,7 @@ class Room extends Widget {
         document.body.onmousemove = ev => {
             this.mousePosition = new Vector2(ev.x - game.renderer.view.offsetLeft, ev.y - game.renderer.view.offsetTop);
         };
+        this.debug.fontColor = Color.white;
         this.addChild(this.debug);
         const apple = this.createItem(ItemType.Apple);
         this.itemLayer.addChild(apple);

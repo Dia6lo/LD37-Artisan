@@ -293,8 +293,11 @@ class Renderer {
             }
         }
     }
-    renderText(text, x = 0, y = 0) {
+    renderText(text, x = 0, y = 0, color) {
+        this.save();
+        this.vectorGraphics.fillStyle(color);
         this.context.fillText(text, x, y);
+        this.restore();
     }
     measureText(text) {
         return this.context.measureText(text).width;
@@ -644,7 +647,7 @@ class Label extends Widget {
                 position.y = this.size.y;
                 break;
         }
-        renderer.renderText(this.text, position.x, position.y);
+        renderer.renderText(this.text, position.x, position.y, this.fontColor);
         super.render(renderer);
     }
 }

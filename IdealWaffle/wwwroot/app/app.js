@@ -17,7 +17,14 @@ class PositionTransformer {
     constructor() {
         this.cartesianBounds = new Vector2(100, 100);
         this.obstacles = [
-            new Rectangle(0, 20, 12, 35)
+            new Rectangle(0, 0, 20, 38),
+            new Rectangle(0, 0, 40, 20),
+            new Rectangle(0, 34, 14, 60),
+            new Rectangle(0, 58, 18, 102),
+            new Rectangle(16, 86, 28, 102),
+            new Rectangle(38, 0, 70, 10),
+            new Rectangle(68, 0, 97, 15),
+            new Rectangle(95, 0, 102, 7)
         ];
         this.isometricTop = new Vector2(432, 204);
         this.isometricBottom = new Vector2(432, 584);
@@ -70,16 +77,16 @@ class PositionTransformer {
                     result = intersection;
                 }
                 if (above) {
-                    result.y -= 0.05;
+                    result.y -= 0.1;
                 }
                 else if (below) {
-                    result.y += 0.05;
+                    result.y += 0.1;
                 }
                 else if (right) {
-                    result.x += 0.05;
+                    result.x += 0.1;
                 }
                 else if (left) {
-                    result.x -= 0.05;
+                    result.x -= 0.1;
                 }
             }
         }
@@ -128,7 +135,7 @@ class Room extends Widget {
         this.room = Sprite.fromImage("assets/Room.png");
         this.character = Sprite.fromImage("assets/Character.png");
         this.transformer = new PositionTransformer();
-        this.characterPosition = new Vector2(0, 0);
+        this.characterPosition = new Vector2(50, 50);
         this.characterVelocity = Vector2.zero;
         this.characterSpeed = 1;
         this.debug = new Label();
@@ -142,6 +149,7 @@ class Room extends Widget {
         document.body.onmousemove = ev => {
             this.mousePosition = new Vector2(ev.x - game.renderer.view.offsetLeft, ev.y - game.renderer.view.offsetTop);
         };
+        this.debug.fontColor = Color.white;
         this.addChild(this.debug);
         const apple = this.createItem(0);
         this.itemLayer.addChild(apple);

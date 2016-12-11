@@ -2,7 +2,22 @@
     cartesianBounds = new Vector2(100, 100);
 
     obstacles = [
-        new Rectangle(0, 20, 12, 35)
+        // Table (left side)
+        new Rectangle(0, 0, 20, 38),
+        // Table (right side)
+        new Rectangle(0, 0, 40, 20),
+        // Drawer
+        new Rectangle(0, 34, 14, 60),
+        // Bed
+        new Rectangle(0, 58, 18, 102),
+        // Box
+        new Rectangle(16, 86, 28, 102),
+        // Bookshelve
+        new Rectangle(38, 0, 70, 10),
+        // Poststand
+        new Rectangle(68, 0, 97, 15),
+        // Poststand cables
+        new Rectangle(95, 0, 102, 7)
     ];
 
     isometricTop = new Vector2(432, 204);
@@ -62,16 +77,16 @@
                     result = intersection;
                 }
                 if (above) {
-                    result.y -= 0.05;
+                    result.y -= 0.1;
                 }
                 else if (below) {
-                    result.y += 0.05;
+                    result.y += 0.1;
                 }
                 else if (right) {
-                    result.x += 0.05;
+                    result.x += 0.1;
                 }
                 else if (left) {
-                    result.x -= 0.05;
+                    result.x -= 0.1;
                 }
             }
         }
