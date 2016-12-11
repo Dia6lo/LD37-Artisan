@@ -3,11 +3,11 @@ class AssetBundle {
         this.loadedHost = ObservableEventHost.create();
         this.imageUrls = [
             AssetBundle.apple,
-            AssetBundle.player,
             AssetBundle.room,
             AssetBundle.town,
             AssetBundle.light,
-            AssetBundle.itemHand
+            AssetBundle.itemHand,
+            AssetBundle.playerSheet
         ];
     }
     get loaded() {
@@ -34,11 +34,11 @@ class AssetBundle {
 }
 AssetBundle.assetFolder = "assets";
 AssetBundle.apple = AssetBundle.createPath("Apple.png");
-AssetBundle.player = AssetBundle.createPath("Player.png");
 AssetBundle.room = AssetBundle.createPath("Room.png");
 AssetBundle.town = AssetBundle.createPath("Town.png");
 AssetBundle.light = AssetBundle.createPath("Light.png");
 AssetBundle.itemHand = AssetBundle.createPath("ItemHand.png");
+AssetBundle.playerSheet = AssetBundle.createPath("Player_sheet.png");
 class CityParallax extends Widget {
     constructor() {
         super();
@@ -151,6 +151,25 @@ class LoadingScreen extends Widget {
         renderer.restore();
         this.label.size = size;
         super.render(renderer);
+    }
+}
+class Player extends Widget {
+    constructor() {
+        super();
+        this.spriteSheet = Spritesheet.fromImage(AssetBundle.playerSheet);
+        this.spriteSheet.size.set(40, 130);
+        this.spriteSheet.spriteSize.set(20, 65);
+        const idleAnimation = new Animation(60);
+        idleAnimation.finalAction = Animation.loop();
+        const spriteIdAnimator = Spritesheet.spriteIdAnimator();
+        spriteIdAnimator.setFrame(0, 0);
+        spriteIdAnimator.setFrame(15, 1);
+        spriteIdAnimator.setFrame(30, 2);
+        spriteIdAnimator.setFrame(45, 3);
+        idleAnimation.setAnimator(spriteIdAnimator);
+        this.spriteSheet.animations.set("Idle", idleAnimation);
+        this.addChild(this.spriteSheet);
+        this.spriteSheet.runAnimation("Idle");
     }
 }
 class PositionTransformer {
@@ -273,7 +292,7 @@ class Room extends Widget {
     constructor() {
         super();
         this.room = Sprite.fromImage(AssetBundle.room);
-        this.player = Sprite.fromImage(AssetBundle.player);
+        this.player = new Player();
         this.transformer = new PositionTransformer();
         this.playerPosition = new Vector2(50, 50);
         this.characterSpeed = 0.5;
@@ -438,6 +457,22 @@ class Item extends Sprite {
         renderer.restore();
     }
 }
+class Spritesheet extends Widget {
+    constructor(texture) {
+        super();
+        this.texture = texture;
+        this.spriteSize = Vector2.zero;
+        this.spriteId = 0;
+    }
+    static fromImage(url) {
+        return new Spritesheet(Texture.fromImage(url));
+    }
+    render(renderer) {
+        renderer.renderTexture(this.texture, 0, 0, this.size.x, this.size.y, this.spriteSize.x * this.spriteId, 0, this.spriteSize.x, this.spriteSize.y);
+        super.render(renderer);
+    }
+}
+Spritesheet.spriteIdAnimator = () => new NumberAnimator("spriteId");
 class WidgetHolder extends Widget {
     set content(widget) {
         const children = this.children.slice();

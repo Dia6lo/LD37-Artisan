@@ -6,18 +6,18 @@ class AssetBundle {
 
     private static readonly assetFolder = "assets";
     static readonly apple = AssetBundle.createPath("Apple.png");
-    static readonly player = AssetBundle.createPath("Player.png");
     static readonly room = AssetBundle.createPath("Room.png");
     static readonly town = AssetBundle.createPath("Town.png");
     static readonly light = AssetBundle.createPath("Light.png");
     static readonly itemHand = AssetBundle.createPath("ItemHand.png");
+    static readonly playerSheet = AssetBundle.createPath("Player_sheet.png");
     private readonly imageUrls = [
         AssetBundle.apple,
-        AssetBundle.player,
         AssetBundle.room,
         AssetBundle.town,
         AssetBundle.light,
-        AssetBundle.itemHand
+        AssetBundle.itemHand,
+        AssetBundle.playerSheet
     ];
 
     private static createPath(file: string) {

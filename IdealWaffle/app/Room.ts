@@ -1,6 +1,6 @@
 class Room extends Widget {
     private room = Sprite.fromImage(AssetBundle.room);
-    private player = Sprite.fromImage(AssetBundle.player);
+    private player = new Player();
     private transformer = new PositionTransformer();
     private playerPosition = new Vector2(50, 50);
     private characterSpeed = 0.5;
