@@ -5,7 +5,8 @@ class AssetBundle {
             AssetBundle.apple,
             AssetBundle.player,
             AssetBundle.room,
-            AssetBundle.town
+            AssetBundle.town,
+            AssetBundle.light
         ];
     }
     get loaded() {
@@ -35,6 +36,7 @@ AssetBundle.apple = AssetBundle.createPath("Apple.png");
 AssetBundle.player = AssetBundle.createPath("Player.png");
 AssetBundle.room = AssetBundle.createPath("Room.png");
 AssetBundle.town = AssetBundle.createPath("Town.png");
+AssetBundle.light = AssetBundle.createPath("Light.png");
 class CityParallax extends Widget {
     constructor() {
         super();
@@ -252,6 +254,13 @@ class Room extends Widget {
         this.player.size = new Vector2(40, 130);
         this.player.pivot = new Vector2(0.5, 1);
         this.addChild(this.room);
+        const light = Sprite.fromImage(AssetBundle.light);
+        light.size = new Vector2(440, 440);
+        light.pivot = Vector2.half;
+        light.position = new Vector2(436, 128);
+        light.opacity = 0.6;
+        this.addChild(light);
+        this.tasks.add(this.updateLightTask(light));
         this.addChild(this.itemLayer);
         this.addChild(this.player);
         document.body.onmousemove = ev => {
@@ -267,6 +276,22 @@ class Room extends Widget {
         this.updateItemHighlights();
         this.updateParallax();
         super.update(delta);
+    }
+    *updateLightTask(light) {
+        while (true) {
+            const random = Math.random();
+            if (random > 0.6) {
+                for (let t of Task.sineMotion(3, 0.6, 1)) {
+                    light.opacity = t;
+                    yield Wait.frame();
+                }
+                for (let t of Task.sineMotion(3, 1, 0.6)) {
+                    light.opacity = t;
+                    yield Wait.frame();
+                }
+            }
+            yield Wait.seconds(1);
+        }
     }
     updateCharacterPosition() {
         const controls = [47, 48, 45, 46];

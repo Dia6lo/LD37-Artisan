@@ -9,11 +9,13 @@ class AssetBundle {
     static readonly player = AssetBundle.createPath("Player.png");
     static readonly room = AssetBundle.createPath("Room.png");
     static readonly town = AssetBundle.createPath("Town.png");
+    static readonly light = AssetBundle.createPath("Light.png");
     private readonly imageUrls = [
         AssetBundle.apple,
         AssetBundle.player,
         AssetBundle.room,
-        AssetBundle.town
+        AssetBundle.town,
+        AssetBundle.light
     ];
 
     private static createPath(file: string) {
