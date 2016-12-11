@@ -6,7 +6,8 @@ class AssetBundle {
             AssetBundle.player,
             AssetBundle.room,
             AssetBundle.town,
-            AssetBundle.light
+            AssetBundle.light,
+            AssetBundle.itemHand
         ];
     }
     get loaded() {
@@ -37,6 +38,7 @@ AssetBundle.player = AssetBundle.createPath("Player.png");
 AssetBundle.room = AssetBundle.createPath("Room.png");
 AssetBundle.town = AssetBundle.createPath("Town.png");
 AssetBundle.light = AssetBundle.createPath("Light.png");
+AssetBundle.itemHand = AssetBundle.createPath("ItemHand.png");
 class CityParallax extends Widget {
     constructor() {
         super();
@@ -80,6 +82,9 @@ class Game extends Application {
         super.run();
         this.assets.load();
     }
+    setPixelFont(size) {
+        this.renderer.context.font = `${size}px tooltipFont`;
+    }
 }
 var game;
 window.onload = () => {
@@ -87,6 +92,34 @@ window.onload = () => {
     document.body.appendChild(game.view);
     game.run();
 };
+class ItemHand extends Widget {
+    constructor(flipped, hint) {
+        super();
+        this.hint = new Label();
+        this.contentHolder = new WidgetHolder();
+        this.pivot = Vector2.half;
+        const sprite = Sprite.fromImage(AssetBundle.itemHand);
+        sprite.pivot = Vector2.half;
+        if (flipped) {
+            sprite.scale.x = -1;
+        }
+        this.addChild(sprite);
+        this.hint.text = hint;
+        this.hint.pivot = Vector2.half;
+        this.hint.horizontalTextAlignment = TextAlignment.Center;
+        this.hint.verticalTextAlignment = TextAlignment.Center;
+        this.contentHolder.pivot = Vector2.half;
+        this.contentHolder.content = this.hint;
+        this.contentHolder.position.set(50, 50);
+        this.addChild(this.contentHolder);
+    }
+    render(renderer) {
+        renderer.save();
+        game.setPixelFont(24);
+        super.render(renderer);
+        renderer.restore();
+    }
+}
 class LoadingScreen extends Widget {
     constructor() {
         super();
@@ -247,6 +280,8 @@ class Room extends Widget {
         this.debug = new Label();
         this.itemLayer = new Widget();
         this.cityParallax = new CityParallax();
+        this.rightHand = new ItemHand(false, "x");
+        this.leftHand = new ItemHand(true, "z");
         this.cityParallax.position = new Vector2(304, 76);
         this.addChild(this.cityParallax);
         this.room.size = new Vector2(886, 554);
@@ -262,6 +297,10 @@ class Room extends Widget {
         this.tasks.add(this.updateLightTask(light));
         this.addChild(this.itemLayer);
         this.addChild(this.player);
+        this.rightHand.position.set(720, 120);
+        this.addChild(this.rightHand);
+        this.leftHand.position.set(250, 120);
+        this.addChild(this.leftHand);
         document.body.onmousemove = ev => {
             this.mousePosition = new Vector2(ev.x - game.renderer.view.offsetLeft, ev.y - game.renderer.view.offsetTop);
         };
@@ -382,7 +421,7 @@ class Item extends Sprite {
         renderer.save();
         if (this.highlighted) {
             const fontSize = 32;
-            renderer.context.font = `${fontSize}px tooltipFont`;
+            game.setPixelFont(fontSize);
             const measure = new Vector2(renderer.measureText(this.tooltip.text), fontSize);
             this.tooltip.size = measure.add(new Vector2(10));
             this.tooltip.position = new Vector2(this.width / 2, -5);
@@ -397,6 +436,15 @@ class Item extends Sprite {
         }
         super.render(renderer);
         renderer.restore();
+    }
+}
+class WidgetHolder extends Widget {
+    set content(widget) {
+        const children = this.children.slice();
+        for (let child of children) {
+            this.removeChild(child);
+        }
+        this.addChild(widget);
     }
 }
 //# sourceMappingURL=app.js.map

@@ -8,6 +8,8 @@ class Room extends Widget {
     private debug = new Label();
     private itemLayer = new Widget();
     private cityParallax = new CityParallax();
+    private rightHand = new ItemHand(false, "x");
+    private leftHand = new ItemHand(true, "z");
 
     constructor() {
         super();
@@ -26,6 +28,10 @@ class Room extends Widget {
         this.tasks.add(this.updateLightTask(light));
         this.addChild(this.itemLayer);
         this.addChild(this.player);
+        this.rightHand.position.set(720, 120);
+        this.addChild(this.rightHand);
+        this.leftHand.position.set(250, 120);
+        this.addChild(this.leftHand);
         document.body.onmousemove = ev => {
             this.mousePosition = new Vector2(ev.x - game.renderer.view.offsetLeft, ev.y - game.renderer.view.offsetTop);
         };
@@ -160,7 +166,7 @@ class Item extends Sprite {
         renderer.save();
         if (this.highlighted) {
             const fontSize = 32;
-            renderer.context.font = `${fontSize}px tooltipFont`;
+            game.setPixelFont(fontSize);
             const measure = new Vector2(renderer.measureText(this.tooltip.text), fontSize);
             this.tooltip.size = measure.add(new Vector2(10));
             this.tooltip.position = new Vector2(this.width / 2, -5);

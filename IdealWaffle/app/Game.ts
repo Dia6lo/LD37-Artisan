@@ -33,6 +33,10 @@
         super.run();
         this.assets.load();
     }
+
+    setPixelFont(size: number) {
+        this.renderer.context.font = `${size}px tooltipFont`;
+    }
 }
 
 var game: Game;
