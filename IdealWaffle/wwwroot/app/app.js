@@ -12,6 +12,36 @@ class CityParallax extends Widget {
         renderer.renderTexture(this.texture, 0, 0, this.clipSize.x * 2, this.clipSize.y * 2, this.clipStartOffset.x + clipStart.x, this.clipStartOffset.y + clipStart.y, this.clipSize.x, this.clipSize.y);
     }
 }
+class AssetBundle {
+    constructor() {
+        this.loadedHost = ObservableEventHost.create();
+        this.assetFolder = "assets";
+        this.imageUrls = [
+            "Apple.png",
+            "Character.png",
+            "Room.png",
+            "Town.png"
+        ];
+    }
+    get loaded() {
+        return this.loadedHost;
+    }
+    ;
+    load() {
+        let imagesLoaded = 0;
+        const self = this;
+        for (let imageUrl of this.imageUrls) {
+            const image = new Image();
+            image.onload = () => {
+                imagesLoaded++;
+                if (imagesLoaded === self.imageUrls.length) {
+                    self.loadedHost.dispatch(fn => fn());
+                }
+            };
+            image.src = `${this.assetFolder}/${imageUrl}`;
+        }
+    }
+}
 class Game extends Application {
     constructor() {
         super(886, 554);
@@ -23,9 +53,13 @@ class Game extends Application {
 }
 var game;
 window.onload = () => {
-    game = new Game();
-    document.body.appendChild(game.view);
-    game.run();
+    let assets = new AssetBundle();
+    assets.loaded.subscribe(() => {
+        game = new Game();
+        document.body.appendChild(game.view);
+        game.run();
+    });
+    assets.load();
 };
 class PositionTransformer {
     constructor() {

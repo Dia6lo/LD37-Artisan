@@ -15,3 +15,33 @@ class CityParallax extends Widget {
             this.clipStartOffset.x + clipStart.x, this.clipStartOffset.y + clipStart.y, this.clipSize.x, this.clipSize.y);
     }
 }
+
+class AssetBundle {
+    private loadedHost = ObservableEventHost.create<() => void>();
+    get loaded(): ObservableEvent<() => void> {
+        return this.loadedHost;
+    };
+
+    private readonly assetFolder = "assets";
+    private readonly imageUrls = [
+        "Apple.png",
+        "Character.png",
+        "Room.png",
+        "Town.png"
+    ];
+
+    load() {
+        let imagesLoaded = 0;
+        const self = this;
+        for (let imageUrl of this.imageUrls) {
+            const image = new Image();
+            image.onload = () => {
+                imagesLoaded++;
+                if (imagesLoaded === self.imageUrls.length) {
+                    self.loadedHost.dispatch(fn => fn());
+                }
+            };
+            image.src = `${this.assetFolder}/${imageUrl}`;
+        }
+    }
+}

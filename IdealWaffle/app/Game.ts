@@ -10,7 +10,11 @@
 
 var game: Game;
 window.onload = () => {
-    game = new Game();
-    document.body.appendChild(game.view);
-    game.run();
+    let assets = new AssetBundle();
+    assets.loaded.subscribe(() => {
+        game = new Game();
+        document.body.appendChild(game.view);
+        game.run();
+    });
+    assets.load();
 };
