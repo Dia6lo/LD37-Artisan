@@ -312,10 +312,10 @@ class Room extends Widget {
         light.pivot = Vector2.half;
         light.position = new Vector2(436, 128);
         light.opacity = 0.6;
-        this.addChild(light);
         this.tasks.add(this.updateLightTask(light));
         this.addChild(this.itemLayer);
         this.addChild(this.player);
+        this.addChild(light);
         this.rightHand.position.set(720, 120);
         this.addChild(this.rightHand);
         this.leftHand.position.set(250, 120);
