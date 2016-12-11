@@ -230,7 +230,7 @@ declare class Renderer {
     globalAlpha: number;
     render(renderObject: RenderObject): void;
     renderTexture(texture?: Texture, x?: number, y?: number, width?: number, height?: number, sx?: number, sy?: number, sWidth?: number, sHeight?: number): void;
-    renderText(text: string, x: number, y: number, color: Color): void;
+    renderText(text: string, x?: number, y?: number, color?: Color): void;
     measureText(text: string): number;
     private renderUndefinedTexture(x?, y?, width?, height?);
     translate(x: number, y: number): void;

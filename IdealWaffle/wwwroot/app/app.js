@@ -1,7 +1,21 @@
+class CityParallax extends Widget {
+    constructor() {
+        super();
+        this.texture = Texture.fromImage("assets/Town.png");
+        this.clipSize = new Vector2(136, 56);
+        this.parallaxSize = new Vector2(39, 10);
+        this.clipStartOffset = new Vector2(19.5, 5);
+        this.offset = Vector2.zero;
+    }
+    render(renderer) {
+        const clipStart = this.offset.multiply(this.parallaxSize);
+        renderer.renderTexture(this.texture, 0, 0, this.clipSize.x * 2, this.clipSize.y * 2, this.clipStartOffset.x + clipStart.x, this.clipStartOffset.y + clipStart.y, this.clipSize.x, this.clipSize.y);
+    }
+}
 class Game extends Application {
     constructor() {
         super(886, 554);
-        this.renderer.backgroundColor = Color.skyblue;
+        this.renderer.backgroundColor = Color.black;
         const root = new Room();
         this.root = root;
         this.renderer.imageSmoothing = false;
@@ -137,9 +151,12 @@ class Room extends Widget {
         this.transformer = new PositionTransformer();
         this.characterPosition = new Vector2(50, 50);
         this.characterVelocity = Vector2.zero;
-        this.characterSpeed = 1;
+        this.characterSpeed = 0.5;
         this.debug = new Label();
         this.itemLayer = new Widget();
+        this.cityParallax = new CityParallax();
+        this.cityParallax.position = new Vector2(304, 76);
+        this.addChild(this.cityParallax);
         this.room.size = new Vector2(886, 554);
         this.character.size = new Vector2(23, 26);
         this.character.pivot = new Vector2(0.5, 1);
@@ -157,6 +174,7 @@ class Room extends Widget {
     update(delta) {
         this.updateCharacterPosition();
         this.updateItemHighlights();
+        this.updateParallax();
         super.update(delta);
     }
     updateCharacterPosition() {
@@ -186,6 +204,15 @@ class Room extends Widget {
             item.highlighted = this.characterPosition.subtract(item.cartesianPosition).length <= 5;
         }
     }
+    updateParallax() {
+        const leftX = this.transformer.isometricLeft.x;
+        const rightX = this.transformer.isometricRight.x;
+        const x = (this.character.x - leftX) / (rightX - leftX);
+        const bottomY = this.transformer.isometricBottom.y;
+        const topY = this.transformer.isometricTop.y;
+        const y = (this.character.y - topY) / (bottomY - topY);
+        this.cityParallax.offset.set(x, y);
+    }
     getVelocityDirection(key) {
         switch (key) {
             case 47:
@@ -203,7 +230,7 @@ class Room extends Widget {
     createItem(type) {
         switch (type) {
             case 0:
-                return new Item(new Vector2(5, 10), this.transformer, Texture.fromImage("assets/Apple.png"), "Apple");
+                return new Item(new Vector2(25, 25), this.transformer, Texture.fromImage("assets/Apple.png"), "Apple");
             default:
                 throw "Error creating item";
         }
@@ -245,7 +272,7 @@ class Item extends Sprite {
                 .drawRoundedRect(this.tooltip.x - this.tooltip.width / 2, this.tooltip.y - this.tooltip.height * 0.9, this.tooltip.width, this.tooltip.height * 1.2, 5);
             renderer.restore();
             renderer.render(this.tooltip);
-            renderer.context.globalCompositeOperation = "color-burn";
+            renderer.context.globalCompositeOperation = "lighter";
         }
         super.render(renderer);
         renderer.restore();

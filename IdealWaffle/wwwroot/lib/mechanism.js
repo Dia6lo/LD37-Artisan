@@ -295,7 +295,9 @@ class Renderer {
     }
     renderText(text, x = 0, y = 0, color) {
         this.save();
-        this.vectorGraphics.fillStyle(color);
+        if (color) {
+            this.vectorGraphics.fillStyle(color);
+        }
         this.context.fillText(text, x, y);
         this.restore();
     }

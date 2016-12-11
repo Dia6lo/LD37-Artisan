@@ -4,13 +4,16 @@ class Room extends Widget {
     private transformer = new PositionTransformer();
     private characterPosition = new Vector2(50, 50);
     private characterVelocity = Vector2.zero;
-    private characterSpeed = 1;
+    private characterSpeed = 0.5;
     private mousePosition: Vector2;
     private debug = new Label();
     private itemLayer = new Widget();
+    private cityParallax = new CityParallax();
 
     constructor() {
         super();
+        this.cityParallax.position = new Vector2(304, 76);
+        this.addChild(this.cityParallax);
         this.room.size = new Vector2(886, 554);
         this.character.size = new Vector2(23, 26);
         this.character.pivot = new Vector2(0.5, 1);
@@ -29,6 +32,7 @@ class Room extends Widget {
     update(delta: number): void {
         this.updateCharacterPosition();
         this.updateItemHighlights();
+        this.updateParallax();
         super.update(delta);
     }
 
@@ -61,6 +65,16 @@ class Room extends Widget {
         }
     }
 
+    private updateParallax() {
+        const leftX = this.transformer.isometricLeft.x;
+        const rightX = this.transformer.isometricRight.x;
+        const x = (this.character.x - leftX) / (rightX - leftX);
+        const bottomY = this.transformer.isometricBottom.y;
+        const topY = this.transformer.isometricTop.y;
+        const y = (this.character.y - topY) / (bottomY - topY);
+        this.cityParallax.offset.set(x, y);
+    }
+
     private getVelocityDirection(key: Key) {
         switch (key) {
             case Key.Left:
@@ -79,7 +93,7 @@ class Room extends Widget {
     createItem(type: ItemType): Item {
         switch (type) {
             case ItemType.Apple:
-                return new Item(new Vector2(5, 10), this.transformer, Texture.fromImage("assets/Apple.png"), "Apple");
+                return new Item(new Vector2(25, 25), this.transformer, Texture.fromImage("assets/Apple.png"), "Apple");
             default:
                 throw "Error creating item";
         }
@@ -129,7 +143,7 @@ class Item extends Sprite {
                 this.tooltip.y - this.tooltip.height * 0.9, this.tooltip.width, this.tooltip.height * 1.2, 5);
             renderer.restore();
             renderer.render(this.tooltip);
-            renderer.context.globalCompositeOperation = "color-burn";
+            renderer.context.globalCompositeOperation = "lighter";
         }
         super.render(renderer);
         renderer.restore();

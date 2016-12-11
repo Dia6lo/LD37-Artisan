@@ -1,7 +1,7 @@
 ﻿class Game extends Application {
     constructor() {
         super(886, 554);
-        this.renderer.backgroundColor = Color.skyblue;
+        this.renderer.backgroundColor = Color.black;
         const root = new Room();
         this.root = root;
         this.renderer.imageSmoothing = false;
