@@ -242,8 +242,7 @@ class Room extends Widget {
         this.room = Sprite.fromImage(AssetBundle.room);
         this.player = Sprite.fromImage(AssetBundle.player);
         this.transformer = new PositionTransformer();
-        this.characterPosition = new Vector2(50, 50);
-        this.characterVelocity = Vector2.zero;
+        this.playerPosition = new Vector2(50, 50);
         this.characterSpeed = 0.5;
         this.debug = new Label();
         this.itemLayer = new Widget();
@@ -302,13 +301,19 @@ class Room extends Widget {
         }
         direction.x = Math.abs(direction.x) === 1 ? direction.x * 0.75 : direction.x;
         direction.y = Math.abs(direction.y) === 1 ? direction.y * 0.75 : direction.y;
-        this.characterVelocity = direction.multiply(this.characterSpeed);
-        this.characterPosition = this.transformer
-            .moveInCartesian(this.characterPosition, this.characterPosition.add(this.characterVelocity));
+        const playerVelocity = direction.multiply(this.characterSpeed);
+        if (game.input.isKeyPressed(47) && !game.input.isKeyPressed(48)) {
+            this.player.scale.x = -1;
+        }
+        else if (!game.input.isKeyPressed(47) && game.input.isKeyPressed(48)) {
+            this.player.scale.x = 1;
+        }
+        this.playerPosition = this.transformer
+            .moveInCartesian(this.playerPosition, this.playerPosition.add(playerVelocity));
         this.player.position = this.transformer
-            .moveInIsometric(this.player.position, this.transformer.toIsometric(this.characterPosition));
-        this.characterPosition = this.transformer.toCartesian(this.player.position);
-        this.debug.text = `${this.toStringV2(this.characterPosition)} ${this.toStringV2(this.player.position)}`;
+            .moveInIsometric(this.player.position, this.transformer.toIsometric(this.playerPosition));
+        this.playerPosition = this.transformer.toCartesian(this.player.position);
+        this.debug.text = `${this.toStringV2(this.playerPosition)} ${this.toStringV2(this.player.position)}`;
         if (this.mousePosition) {
             this.debug.text += ` ${this.toStringV2(this.mousePosition)}  ${this
                 .toStringV2(this.transformer.toCartesian(this.mousePosition))}`;
@@ -317,7 +322,7 @@ class Room extends Widget {
     updateItemHighlights() {
         for (let child of this.itemLayer.children) {
             const item = child;
-            item.highlighted = this.characterPosition.subtract(item.cartesianPosition).length <= 5;
+            item.highlighted = this.playerPosition.subtract(item.cartesianPosition).length <= 5;
         }
     }
     updateParallax() {

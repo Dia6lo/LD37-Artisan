@@ -2,8 +2,7 @@ class Room extends Widget {
     private room = Sprite.fromImage(AssetBundle.room);
     private player = Sprite.fromImage(AssetBundle.player);
     private transformer = new PositionTransformer();
-    private characterPosition = new Vector2(50, 50);
-    private characterVelocity = Vector2.zero;
+    private playerPosition = new Vector2(50, 50);
     private characterSpeed = 0.5;
     private mousePosition: Vector2;
     private debug = new Label();
@@ -69,13 +68,19 @@ class Room extends Widget {
         }
         direction.x = Math.abs(direction.x) === 1 ? direction.x * 0.75 : direction.x;
         direction.y = Math.abs(direction.y) === 1 ? direction.y * 0.75 : direction.y;
-        this.characterVelocity = direction.multiply(this.characterSpeed);
-        this.characterPosition = this.transformer
-            .moveInCartesian(this.characterPosition, this.characterPosition.add(this.characterVelocity));
+        const playerVelocity = direction.multiply(this.characterSpeed);
+        if (game.input.isKeyPressed(Key.Left) && !game.input.isKeyPressed(Key.Right)) {
+            this.player.scale.x = -1;
+        }
+        else if (!game.input.isKeyPressed(Key.Left) && game.input.isKeyPressed(Key.Right)) {
+            this.player.scale.x = 1;
+        }
+        this.playerPosition = this.transformer
+            .moveInCartesian(this.playerPosition, this.playerPosition.add(playerVelocity));
         this.player.position = this.transformer
-            .moveInIsometric(this.player.position, this.transformer.toIsometric(this.characterPosition));
-        this.characterPosition = this.transformer.toCartesian(this.player.position);
-        this.debug.text = `${this.toStringV2(this.characterPosition)} ${this.toStringV2(this.player.position)}`;
+            .moveInIsometric(this.player.position, this.transformer.toIsometric(this.playerPosition));
+        this.playerPosition = this.transformer.toCartesian(this.player.position);
+        this.debug.text = `${this.toStringV2(this.playerPosition)} ${this.toStringV2(this.player.position)}`;
         if (this.mousePosition) {
             this.debug.text += ` ${this.toStringV2(this.mousePosition)}  ${this
                 .toStringV2(this.transformer.toCartesian(this.mousePosition))}`;
@@ -85,7 +90,7 @@ class Room extends Widget {
     private updateItemHighlights() {
         for (let child of this.itemLayer.children) {
             const item = child as Item;
-            item.highlighted = this.characterPosition.subtract(item.cartesianPosition).length <= 5;
+            item.highlighted = this.playerPosition.subtract(item.cartesianPosition).length <= 5;
         }
     }
 
