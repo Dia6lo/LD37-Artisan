@@ -88,7 +88,8 @@ window.onload = () => {
 class LoadingScreen extends Widget {
     constructor() {
         super();
-        this.label = new Label("Loading");
+        this.label = new Label();
+        this.label.fontColor = Color.white;
         this.label.horizontalTextAlignment = TextAlignment.Center;
         this.label.verticalTextAlignment = TextAlignment.Center;
         this.addChild(this.label);

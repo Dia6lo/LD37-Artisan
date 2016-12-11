@@ -622,7 +622,6 @@ class Label extends Widget {
         this.text = text;
         this.verticalTextAlignment = TextAlignment.Start;
         this.horizontalTextAlignment = TextAlignment.Start;
-        this.fontColor = Color.white;
     }
     render(renderer) {
         if (!this.text) {

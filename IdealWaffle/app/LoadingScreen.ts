@@ -1,8 +1,9 @@
 ﻿class LoadingScreen extends Widget {
-    private readonly label = new Label("Loading");
+    private readonly label = new Label();
 
     constructor() {
         super();
+        this.label.fontColor = Color.white;
         this.label.horizontalTextAlignment = TextAlignment.Center;
         this.label.verticalTextAlignment = TextAlignment.Center;
         this.addChild(this.label);
