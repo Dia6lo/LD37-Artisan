@@ -1,20 +1,43 @@
 ﻿class Game extends Application {
+    private state = GameState.Loading;
+    readonly assets = new AssetBundle();
+    private readonly loadingScreen: LoadingScreen;
+    private readonly room: Room;
+
     constructor() {
         super(886, 554);
         this.renderer.backgroundColor = Color.black;
-        const root = new Room();
-        this.root = root;
+        this.assets.loaded.subscribe(this.onAssetsLoaded, this);
+        this.loadingScreen = new LoadingScreen();
+        this.room = new Room();
+        this.root = new Widget();
+        this.root.addChild(this.room);
+        this.root.addChild(this.loadingScreen);
         this.renderer.imageSmoothing = false;
+    }
+
+    private onAssetsLoaded(): void {
+        this.state = GameState.Loaded;
+        this.root.tasks.add(this.moveOutLoadingScreenTask());
+    }
+
+    private *moveOutLoadingScreenTask() {
+        for (let t of Task.linearMotion(0.5, 0, -this.renderer.height)) {
+            this.loadingScreen.position.y = t;
+            yield Wait.frame();
+        }
+        this.state = GameState.Playing;
+    }
+
+    run(): void {
+        super.run();
+        this.assets.load();
     }
 }
 
 var game: Game;
 window.onload = () => {
-    let assets = new AssetBundle();
-    assets.loaded.subscribe(() => {
-        game = new Game();
-        document.body.appendChild(game.view);
-        game.run();
-    });
-    assets.load();
+    game = new Game();
+    document.body.appendChild(game.view);
+    game.run();
 };

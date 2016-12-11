@@ -1,32 +1,20 @@
-class CityParallax extends Widget {
-    constructor() {
-        super();
-        this.texture = Texture.fromImage("assets/Town.png");
-        this.clipSize = new Vector2(136, 56);
-        this.parallaxSize = new Vector2(39, 10);
-        this.clipStartOffset = new Vector2(19.5, 5);
-        this.offset = Vector2.zero;
-    }
-    render(renderer) {
-        const clipStart = this.offset.multiply(this.parallaxSize);
-        renderer.renderTexture(this.texture, 0, 0, this.clipSize.x * 2, this.clipSize.y * 2, this.clipStartOffset.x + clipStart.x, this.clipStartOffset.y + clipStart.y, this.clipSize.x, this.clipSize.y);
-    }
-}
 class AssetBundle {
     constructor() {
         this.loadedHost = ObservableEventHost.create();
-        this.assetFolder = "assets";
         this.imageUrls = [
-            "Apple.png",
-            "Character.png",
-            "Room.png",
-            "Town.png"
+            AssetBundle.apple,
+            AssetBundle.player,
+            AssetBundle.room,
+            AssetBundle.town
         ];
     }
     get loaded() {
         return this.loadedHost;
     }
     ;
+    static createPath(file) {
+        return `${this.assetFolder}/${file}`;
+    }
     load() {
         let imagesLoaded = 0;
         const self = this;
@@ -38,29 +26,97 @@ class AssetBundle {
                     self.loadedHost.dispatch(fn => fn());
                 }
             };
-            image.src = `${this.assetFolder}/${imageUrl}`;
+            image.src = imageUrl;
         }
+    }
+}
+AssetBundle.assetFolder = "assets";
+AssetBundle.apple = AssetBundle.createPath("Apple.png");
+AssetBundle.player = AssetBundle.createPath("Player.png");
+AssetBundle.room = AssetBundle.createPath("Room.png");
+AssetBundle.town = AssetBundle.createPath("Town.png");
+class CityParallax extends Widget {
+    constructor() {
+        super();
+        this.texture = Texture.fromImage(AssetBundle.town);
+        this.clipSize = new Vector2(136, 56);
+        this.parallaxSize = new Vector2(39, 10);
+        this.clipStartOffset = new Vector2(19.5, 5);
+        this.offset = Vector2.zero;
+    }
+    render(renderer) {
+        const clipStart = this.offset.multiply(this.parallaxSize);
+        renderer.renderTexture(this.texture, 0, 0, this.clipSize.x * 2, this.clipSize.y * 2, this.clipStartOffset.x + clipStart.x, this.clipStartOffset.y + clipStart.y, this.clipSize.x, this.clipSize.y);
     }
 }
 class Game extends Application {
     constructor() {
         super(886, 554);
+        this.state = 0;
+        this.assets = new AssetBundle();
         this.renderer.backgroundColor = Color.black;
-        const root = new Room();
-        this.root = root;
+        this.assets.loaded.subscribe(this.onAssetsLoaded, this);
+        this.loadingScreen = new LoadingScreen();
+        this.room = new Room();
+        this.root = new Widget();
+        this.root.addChild(this.room);
+        this.root.addChild(this.loadingScreen);
         this.renderer.imageSmoothing = false;
+    }
+    onAssetsLoaded() {
+        this.state = 1;
+        this.root.tasks.add(this.moveOutLoadingScreenTask());
+    }
+    *moveOutLoadingScreenTask() {
+        for (let t of Task.linearMotion(0.5, 0, -this.renderer.height)) {
+            this.loadingScreen.position.y = t;
+            yield Wait.frame();
+        }
+        this.state = 2;
+    }
+    run() {
+        super.run();
+        this.assets.load();
     }
 }
 var game;
 window.onload = () => {
-    let assets = new AssetBundle();
-    assets.loaded.subscribe(() => {
-        game = new Game();
-        document.body.appendChild(game.view);
-        game.run();
-    });
-    assets.load();
+    game = new Game();
+    document.body.appendChild(game.view);
+    game.run();
 };
+class LoadingScreen extends Widget {
+    constructor() {
+        super();
+        this.label = new Label("Loading");
+        this.label.horizontalTextAlignment = TextAlignment.Center;
+        this.label.verticalTextAlignment = TextAlignment.Center;
+        this.addChild(this.label);
+        this.tasks.add(this.updateLabelTask());
+    }
+    *updateLabelTask() {
+        while (true) {
+            this.label.text = "Loading";
+            yield Wait.seconds(0.5);
+            this.label.text = "Loading.";
+            yield Wait.seconds(0.5);
+            this.label.text = "Loading..";
+            yield Wait.seconds(0.5);
+            this.label.text = "Loading...";
+            yield Wait.seconds(0.5);
+        }
+    }
+    render(renderer) {
+        const size = renderer.size;
+        renderer.save();
+        renderer.vectorGraphics
+            .fillStyle(Color.black)
+            .drawRect(0, 0, size.x, size.y);
+        renderer.restore();
+        this.label.size = size;
+        super.render(renderer);
+    }
+}
 class PositionTransformer {
     constructor() {
         this.cartesianBounds = new Vector2(100, 100);
@@ -180,8 +236,8 @@ class PositionTransformer {
 class Room extends Widget {
     constructor() {
         super();
-        this.room = Sprite.fromImage("assets/Room.png");
-        this.character = Sprite.fromImage("assets/Character.png");
+        this.room = Sprite.fromImage(AssetBundle.room);
+        this.player = Sprite.fromImage(AssetBundle.player);
         this.transformer = new PositionTransformer();
         this.characterPosition = new Vector2(50, 50);
         this.characterVelocity = Vector2.zero;
@@ -192,11 +248,11 @@ class Room extends Widget {
         this.cityParallax.position = new Vector2(304, 76);
         this.addChild(this.cityParallax);
         this.room.size = new Vector2(886, 554);
-        this.character.size = new Vector2(23, 26);
-        this.character.pivot = new Vector2(0.5, 1);
+        this.player.size = new Vector2(40, 130);
+        this.player.pivot = new Vector2(0.5, 1);
         this.addChild(this.room);
         this.addChild(this.itemLayer);
-        this.addChild(this.character);
+        this.addChild(this.player);
         document.body.onmousemove = ev => {
             this.mousePosition = new Vector2(ev.x - game.renderer.view.offsetLeft, ev.y - game.renderer.view.offsetTop);
         };
@@ -223,10 +279,10 @@ class Room extends Widget {
         this.characterVelocity = direction.multiply(this.characterSpeed);
         this.characterPosition = this.transformer
             .moveInCartesian(this.characterPosition, this.characterPosition.add(this.characterVelocity));
-        this.character.position = this.transformer
-            .moveInIsometric(this.character.position, this.transformer.toIsometric(this.characterPosition));
-        this.characterPosition = this.transformer.toCartesian(this.character.position);
-        this.debug.text = `${this.toStringV2(this.characterPosition)} ${this.toStringV2(this.character.position)}`;
+        this.player.position = this.transformer
+            .moveInIsometric(this.player.position, this.transformer.toIsometric(this.characterPosition));
+        this.characterPosition = this.transformer.toCartesian(this.player.position);
+        this.debug.text = `${this.toStringV2(this.characterPosition)} ${this.toStringV2(this.player.position)}`;
         if (this.mousePosition) {
             this.debug.text += ` ${this.toStringV2(this.mousePosition)}  ${this
                 .toStringV2(this.transformer.toCartesian(this.mousePosition))}`;
@@ -241,10 +297,10 @@ class Room extends Widget {
     updateParallax() {
         const leftX = this.transformer.isometricLeft.x;
         const rightX = this.transformer.isometricRight.x;
-        const x = (this.character.x - leftX) / (rightX - leftX);
+        const x = (this.player.x - leftX) / (rightX - leftX);
         const bottomY = this.transformer.isometricBottom.y;
         const topY = this.transformer.isometricTop.y;
-        const y = (this.character.y - topY) / (bottomY - topY);
+        const y = (this.player.y - topY) / (bottomY - topY);
         this.cityParallax.offset.set(x, y);
     }
     getVelocityDirection(key) {
@@ -264,7 +320,7 @@ class Room extends Widget {
     createItem(type) {
         switch (type) {
             case 0:
-                return new Item(new Vector2(25, 25), this.transformer, Texture.fromImage("assets/Apple.png"), "Apple");
+                return new Item(new Vector2(25, 25), this.transformer, Texture.fromImage(AssetBundle.apple), "Apple");
             default:
                 throw "Error creating item";
         }

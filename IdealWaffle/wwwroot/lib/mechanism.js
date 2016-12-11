@@ -575,10 +575,10 @@ class Widget extends RenderObject {
         renderer.globalAlpha *= this.opacity;
         renderer.translate(this.position.x, this.position.y);
         renderer.rotate(this.rotation);
+        renderer.scale(this.scale.x, this.scale.y);
         const offset = this.pivot
             .multiply(new Vector2(this.width, this.height));
         renderer.translate(-offset.x, -offset.y);
-        renderer.scale(this.scale.x, this.scale.y);
     }
     afterRender(renderer) {
         renderer.restore();
@@ -622,6 +622,7 @@ class Label extends Widget {
         this.text = text;
         this.verticalTextAlignment = TextAlignment.Start;
         this.horizontalTextAlignment = TextAlignment.Start;
+        this.fontColor = Color.white;
     }
     render(renderer) {
         if (!this.text) {
@@ -768,7 +769,7 @@ class Task {
         }
         return !predicateCompleted;
     }
-    static *sinMotion(timePeriod, from, to) {
+    static *sineMotion(timePeriod, from, to) {
         for (let t of this.motion(timePeriod, from, to, fraction => Math.sin(fraction * Math.HALFPI))) {
             yield t;
         }

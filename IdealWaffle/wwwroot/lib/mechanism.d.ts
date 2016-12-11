@@ -371,7 +371,7 @@ declare class Task {
     constructor(iterator: Iterator<WaitPredicate>);
     update(delta: number): void;
     private processWaitPredicate(delta);
-    static sinMotion(timePeriod: number, from: number, to: number): IterableIterator<number>;
+    static sineMotion(timePeriod: number, from: number, to: number): IterableIterator<number>;
     static sqrtMotion(timePeriod: number, from: number, to: number): IterableIterator<number>;
     static linearMotion(timePeriod: number, from: number, to: number): IterableIterator<number>;
     static motion(timePeriod: number, from: number, to: number, fn: (fraction: number) => number): IterableIterator<number>;
