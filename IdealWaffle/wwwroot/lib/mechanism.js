@@ -54,6 +54,10 @@ class Application {
                 return 47;
             case "Space":
                 return 51;
+            case "KeyZ":
+                return 108;
+            case "KeyX":
+                return 106;
             default:
                 return 0;
         }

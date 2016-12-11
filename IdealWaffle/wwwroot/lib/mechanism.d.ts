@@ -13,7 +13,7 @@ declare class Application {
     private handleAnimationFrame(time);
     render(): void;
     update(delta: number): void;
-    translateKey(code: string): Key.Unknown | Key.Up | Key.Down | Key.Left | Key.Right | Key.Space;
+    translateKey(code: string): Key.Unknown | Key.Up | Key.Down | Key.Left | Key.Right | Key.Space | Key.X | Key.Z;
 }
 declare class AudioPlayer {
     view: HTMLDivElement;

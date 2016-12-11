@@ -33,7 +33,7 @@ class Room extends Widget {
             this.mousePosition = new Vector2(ev.x - game.renderer.view.offsetLeft, ev.y - game.renderer.view.offsetTop);
         };
         this.debug.fontColor = Color.white;
-        this.addChild(this.debug);
+        //this.addChild(this.debug);
         const apple = this.createItem(ItemType.Apple);
         this.itemHandPanel.showItem(apple);
         //this.itemLayer.addChild(apple);

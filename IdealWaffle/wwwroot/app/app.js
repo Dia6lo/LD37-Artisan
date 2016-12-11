@@ -129,8 +129,10 @@ class ItemHandPanel extends Widget {
         this.size.set(440, 100);
         this.pivot = Vector2.half;
         this.rightHand.position.set(this.size.x, this.size.y / 2);
+        this.rightHand.tasks.add(this.handMovementTask(this.rightHand, 106));
         this.addChild(this.rightHand);
         this.leftHand.position.set(0, this.size.y / 2);
+        this.leftHand.tasks.add(this.handMovementTask(this.leftHand, 108));
         this.addChild(this.leftHand);
         this.itemHolder.pivot = Vector2.half;
         this.itemHolder.position = this.size.divide(2);
@@ -141,6 +143,29 @@ class ItemHandPanel extends Widget {
         item.position = Vector2.zero;
         item.pivot = Vector2.half;
         this.itemHolder.content = item;
+    }
+    *handMovementTask(hand, key) {
+        const start = hand.position.x;
+        const end = this.itemHolder.position.x;
+        const speed = 15;
+        let destination;
+        while (true) {
+            if (game.input.isKeyPressed(key)) {
+                destination = end;
+            }
+            else {
+                destination = start;
+            }
+            if (hand.x !== destination) {
+                const direction = Math.sign(destination - hand.x);
+                const offset = direction * speed;
+                hand.x += offset;
+                if ((direction < 0 && hand.x < destination) || (direction > 0 && hand.x > destination)) {
+                    hand.x = destination;
+                }
+            }
+            yield Wait.frame();
+        }
     }
 }
 class LoadingScreen extends Widget {
@@ -344,7 +369,6 @@ class Room extends Widget {
             this.mousePosition = new Vector2(ev.x - game.renderer.view.offsetLeft, ev.y - game.renderer.view.offsetTop);
         };
         this.debug.fontColor = Color.white;
-        this.addChild(this.debug);
         const apple = this.createItem(0);
         this.itemHandPanel.showItem(apple);
     }
