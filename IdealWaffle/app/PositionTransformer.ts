@@ -13,7 +13,7 @@
         // Box
         new Rectangle(16, 86, 28, 102),
         // Bookshelve
-        new Rectangle(38, 0, 70, 10),
+        new Rectangle(38, 0, 70, 10.01),
         // Poststand
         new Rectangle(68, 0, 97, 15),
         // Poststand cables

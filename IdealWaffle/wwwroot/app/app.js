@@ -22,7 +22,7 @@ class PositionTransformer {
             new Rectangle(0, 34, 14, 60),
             new Rectangle(0, 58, 18, 102),
             new Rectangle(16, 86, 28, 102),
-            new Rectangle(38, 0, 70, 10),
+            new Rectangle(38, 0, 70, 10.01),
             new Rectangle(68, 0, 97, 15),
             new Rectangle(95, 0, 102, 7)
         ];
