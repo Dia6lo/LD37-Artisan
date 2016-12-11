@@ -9,15 +9,19 @@ class AssetBundle {
     static readonly room = AssetBundle.createPath("Room.png");
     static readonly town = AssetBundle.createPath("Town.png");
     static readonly light = AssetBundle.createPath("Light.png");
-    static readonly itemHand = AssetBundle.createPath("ItemHand.png");
-    static readonly playerSheet = AssetBundle.createPath("Player_sheet.png");
+    static readonly playerIdleSheet = AssetBundle.createPath("PlayerIdleSheet.png");
+    static readonly playerWalkSheet = AssetBundle.createPath("PlayerWalkSheet.png");
+    static readonly leftHand = AssetBundle.createPath("LeftHand.png");
+    static readonly rightHand = AssetBundle.createPath("RightHand.png");
     private readonly imageUrls = [
         AssetBundle.apple,
         AssetBundle.room,
         AssetBundle.town,
         AssetBundle.light,
-        AssetBundle.itemHand,
-        AssetBundle.playerSheet
+        AssetBundle.playerIdleSheet,
+        AssetBundle.playerWalkSheet,
+        AssetBundle.rightHand,
+        AssetBundle.leftHand
     ];
 
     private static createPath(file: string) {

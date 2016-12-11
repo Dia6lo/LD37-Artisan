@@ -3,7 +3,7 @@ class Room extends Widget {
     private player = new Player();
     private transformer = new PositionTransformer();
     private playerPosition = new Vector2(50, 50);
-    private characterSpeed = 0.5;
+    private characterSpeed = 0.30;
     private mousePosition: Vector2;
     private debug = new Label();
     private itemLayer = new Widget();
@@ -79,6 +79,12 @@ class Room extends Widget {
         else if (!game.input.isKeyPressed(Key.Left) && game.input.isKeyPressed(Key.Right)) {
             this.player.scale.x = 1;
         }
+        if (playerVelocity.x === 0 && playerVelocity.y === 0) {
+            this.player.runIdleAnimation();
+        }
+        else {
+            this.player.runWalkAnimation();
+        }
         this.playerPosition = this.transformer
             .moveInCartesian(this.playerPosition, this.playerPosition.add(playerVelocity));
         this.player.position = this.transformer
@@ -94,7 +100,7 @@ class Room extends Widget {
     private updateItemHighlights() {
         for (let child of this.itemLayer.children) {
             const item = child as Item;
-            item.highlighted = this.playerPosition.subtract(item.cartesianPosition).length <= 5;
+            //item.highlighted = this.playerPosition.subtract(item.cartesianPosition).length <= 5;
         }
     }
 
@@ -142,43 +148,24 @@ const enum ItemType {
 }
 
 class Item extends Sprite {
-    highlighted = false;
     private tooltip = new Label();
+    readonly name: string;
 
     constructor(public cartesianPosition: Vector2, private readonly transformer: PositionTransformer, texture: Texture, name: string) {
         super();
         this.texture = texture;
         this.pivot = new Vector2(0.5, 1);
         this.size = new Vector2(32, 32);
+        this.name = name;
         this.tooltip.text = name;
         this.tooltip.pivot = new Vector2(0.5, 1);
         this.tooltip.horizontalTextAlignment = TextAlignment.Center;
         this.tooltip.verticalTextAlignment = TextAlignment.Center;
     }
 
-    update(delta: number): void {
-        //this.position = this.transformer.toIsometric(this.cartesianPosition);
-    }
-
-    render(renderer: Renderer): void {
-        renderer.save();
-        if (this.highlighted) {
-            const fontSize = 32;
-            game.setPixelFont(fontSize);
-            const measure = new Vector2(renderer.measureText(this.tooltip.text), fontSize);
-            this.tooltip.size = measure.add(new Vector2(10));
-            this.tooltip.position = new Vector2(this.width / 2, -5);
-            renderer.save();
-            renderer.vectorGraphics
-                .strokeStyle(2)
-                .fillStyle(Color.wheat)
-                .drawRoundedRect(this.tooltip.x - this.tooltip.width / 2,
-                this.tooltip.y - this.tooltip.height * 0.9, this.tooltip.width, this.tooltip.height * 1.2, 5);
-            renderer.restore();
-            renderer.render(this.tooltip);
-            renderer.context.globalCompositeOperation = "lighter";
-        }
-        super.render(renderer);
-        renderer.restore();
+    createSprite() {
+        const sprite = new Sprite(this.texture);
+        sprite.size.set(32, 32);
+        return sprite;
     }
 }

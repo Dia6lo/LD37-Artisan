@@ -6,8 +6,10 @@ class AssetBundle {
             AssetBundle.room,
             AssetBundle.town,
             AssetBundle.light,
-            AssetBundle.itemHand,
-            AssetBundle.playerSheet
+            AssetBundle.playerIdleSheet,
+            AssetBundle.playerWalkSheet,
+            AssetBundle.rightHand,
+            AssetBundle.leftHand
         ];
     }
     get loaded() {
@@ -37,8 +39,10 @@ AssetBundle.apple = AssetBundle.createPath("Apple.png");
 AssetBundle.room = AssetBundle.createPath("Room.png");
 AssetBundle.town = AssetBundle.createPath("Town.png");
 AssetBundle.light = AssetBundle.createPath("Light.png");
-AssetBundle.itemHand = AssetBundle.createPath("ItemHand.png");
-AssetBundle.playerSheet = AssetBundle.createPath("Player_sheet.png");
+AssetBundle.playerIdleSheet = AssetBundle.createPath("PlayerIdleSheet.png");
+AssetBundle.playerWalkSheet = AssetBundle.createPath("PlayerWalkSheet.png");
+AssetBundle.leftHand = AssetBundle.createPath("LeftHand.png");
+AssetBundle.rightHand = AssetBundle.createPath("RightHand.png");
 class CityParallax extends Widget {
     constructor() {
         super();
@@ -95,21 +99,12 @@ window.onload = () => {
 class ItemHand extends Widget {
     constructor(flipped, hint) {
         super();
-        this.hint = new Label();
         this.contentHolder = new WidgetHolder();
         this.pivot = Vector2.half;
-        const sprite = Sprite.fromImage(AssetBundle.itemHand);
+        const sprite = flipped ? Sprite.fromImage(AssetBundle.leftHand) : Sprite.fromImage(AssetBundle.rightHand);
         sprite.pivot = Vector2.half;
-        if (flipped) {
-            sprite.scale.x = -1;
-        }
         this.addChild(sprite);
-        this.hint.text = hint;
-        this.hint.pivot = Vector2.half;
-        this.hint.horizontalTextAlignment = TextAlignment.Center;
-        this.hint.verticalTextAlignment = TextAlignment.Center;
         this.contentHolder.pivot = Vector2.half;
-        this.contentHolder.content = this.hint;
         this.contentHolder.position.set(50, 50);
         this.addChild(this.contentHolder);
     }
@@ -139,10 +134,7 @@ class ItemHandPanel extends Widget {
         this.addChild(this.itemHolder);
     }
     showItem(item) {
-        item.highlighted = true;
-        item.position = Vector2.zero;
-        item.pivot = Vector2.half;
-        this.itemHolder.content = item;
+        this.itemHolder.content = new HandItemView(item);
     }
     *handMovementTask(hand, key) {
         const start = hand.position.x;
@@ -162,10 +154,55 @@ class ItemHandPanel extends Widget {
                 hand.x += offset;
                 if ((direction < 0 && hand.x < destination) || (direction > 0 && hand.x > destination)) {
                     hand.x = destination;
+                    if (destination === end && this.itemHolder.content != undefined) {
+                        const content = this.itemHolder.content;
+                        content.removeFromParent();
+                        hand.addChild(content);
+                    }
                 }
             }
             yield Wait.frame();
         }
+    }
+}
+class HandItemView extends Widget {
+    constructor(item) {
+        super();
+        this.pivot = Vector2.half;
+        const sprite = item.createSprite();
+        sprite.pivot = Vector2.half;
+        sprite.position = this.size.divide(2).add(new Vector2(0, 5));
+        this.addChild(sprite);
+        const tooltip = new ItemTooltip(item);
+        tooltip.y = -10;
+        this.addChild(tooltip);
+    }
+    render(renderer) {
+        renderer.save();
+        renderer.restore();
+        super.render(renderer);
+    }
+}
+class ItemTooltip extends Label {
+    constructor(item) {
+        super(item.name);
+        this.horizontalTextAlignment = TextAlignment.Center;
+        this.verticalTextAlignment = TextAlignment.Center;
+    }
+    render(renderer) {
+        renderer.save();
+        const fontSize = 32;
+        game.setPixelFont(fontSize);
+        const measure = new Vector2(renderer.measureText(this.text), fontSize);
+        this.size = measure.add(new Vector2(10, 0));
+        renderer.save();
+        renderer.vectorGraphics
+            .strokeStyle(2)
+            .fillStyle(Color.wheat)
+            .drawRoundedRect(0, 5, this.width, this.height, 5);
+        renderer.restore();
+        super.render(renderer);
+        renderer.restore();
     }
 }
 class LoadingScreen extends Widget {
@@ -201,23 +238,59 @@ class LoadingScreen extends Widget {
         super.render(renderer);
     }
 }
+class WidgetHolder extends Widget {
+    get content() {
+        return this.children[0];
+    }
+    set content(widget) {
+        const children = this.children.slice();
+        for (let child of children) {
+            this.removeChild(child);
+        }
+        this.addChild(widget);
+    }
+}
 class Player extends Widget {
     constructor() {
         super();
-        this.spriteSheet = Spritesheet.fromImage(AssetBundle.playerSheet);
-        this.spriteSheet.size.set(40, 130);
-        this.spriteSheet.spriteSize.set(20, 65);
-        const idleAnimation = new Animation(60);
-        idleAnimation.finalAction = Animation.loop();
+        this.idleSpriteSheet = Spritesheet.fromImage(AssetBundle.playerIdleSheet);
+        this.walkSpriteSheet = Spritesheet.fromImage(AssetBundle.playerWalkSheet);
+        this.widgetSize = new Vector2(40, 130);
+        this.spriteSize = new Vector2(20, 65);
+        this.spriteHolder = new WidgetHolder();
+        this.animationName = "Animation";
+        this.setupAnimation(this.idleSpriteSheet, 4, 15);
+        this.setupAnimation(this.walkSpriteSheet, 8, 12);
+        this.runIdleAnimation();
+        this.addChild(this.spriteHolder);
+    }
+    setupAnimation(spritesheet, frameCount, frameDelay) {
+        spritesheet.size = this.widgetSize;
+        spritesheet.spriteSize = this.spriteSize;
+        const animation = new Animation(frameCount * frameDelay);
+        animation.finalAction = Animation.loop();
         const spriteIdAnimator = Spritesheet.spriteIdAnimator();
-        spriteIdAnimator.setFrame(0, 0);
-        spriteIdAnimator.setFrame(15, 1);
-        spriteIdAnimator.setFrame(30, 2);
-        spriteIdAnimator.setFrame(45, 3);
-        idleAnimation.setAnimator(spriteIdAnimator);
-        this.spriteSheet.animations.set("Idle", idleAnimation);
-        this.addChild(this.spriteSheet);
-        this.spriteSheet.runAnimation("Idle");
+        for (let i = 0; i < frameCount; i++) {
+            spriteIdAnimator.setFrame(i * frameDelay, i);
+        }
+        animation.setAnimator(spriteIdAnimator);
+        spritesheet.animations.set(this.animationName, animation);
+    }
+    runIdleAnimation() {
+        if (this.idle) {
+            return;
+        }
+        this.idle = true;
+        this.spriteHolder.content = this.idleSpriteSheet;
+        this.idleSpriteSheet.runAnimation(this.animationName);
+    }
+    runWalkAnimation() {
+        if (!this.idle) {
+            return;
+        }
+        this.idle = false;
+        this.spriteHolder.content = this.walkSpriteSheet;
+        this.walkSpriteSheet.runAnimation(this.animationName);
     }
 }
 class PositionTransformer {
@@ -343,7 +416,7 @@ class Room extends Widget {
         this.player = new Player();
         this.transformer = new PositionTransformer();
         this.playerPosition = new Vector2(50, 50);
-        this.characterSpeed = 0.5;
+        this.characterSpeed = 0.30;
         this.debug = new Label();
         this.itemLayer = new Widget();
         this.cityParallax = new CityParallax();
@@ -410,6 +483,12 @@ class Room extends Widget {
         else if (!game.input.isKeyPressed(47) && game.input.isKeyPressed(48)) {
             this.player.scale.x = 1;
         }
+        if (playerVelocity.x === 0 && playerVelocity.y === 0) {
+            this.player.runIdleAnimation();
+        }
+        else {
+            this.player.runWalkAnimation();
+        }
         this.playerPosition = this.transformer
             .moveInCartesian(this.playerPosition, this.playerPosition.add(playerVelocity));
         this.player.position = this.transformer
@@ -424,7 +503,6 @@ class Room extends Widget {
     updateItemHighlights() {
         for (let child of this.itemLayer.children) {
             const item = child;
-            item.highlighted = this.playerPosition.subtract(item.cartesianPosition).length <= 5;
         }
     }
     updateParallax() {
@@ -467,37 +545,20 @@ class Item extends Sprite {
         super();
         this.cartesianPosition = cartesianPosition;
         this.transformer = transformer;
-        this.highlighted = false;
         this.tooltip = new Label();
         this.texture = texture;
         this.pivot = new Vector2(0.5, 1);
         this.size = new Vector2(32, 32);
+        this.name = name;
         this.tooltip.text = name;
         this.tooltip.pivot = new Vector2(0.5, 1);
         this.tooltip.horizontalTextAlignment = TextAlignment.Center;
         this.tooltip.verticalTextAlignment = TextAlignment.Center;
     }
-    update(delta) {
-    }
-    render(renderer) {
-        renderer.save();
-        if (this.highlighted) {
-            const fontSize = 32;
-            game.setPixelFont(fontSize);
-            const measure = new Vector2(renderer.measureText(this.tooltip.text), fontSize);
-            this.tooltip.size = measure.add(new Vector2(10));
-            this.tooltip.position = new Vector2(this.width / 2, -5);
-            renderer.save();
-            renderer.vectorGraphics
-                .strokeStyle(2)
-                .fillStyle(Color.wheat)
-                .drawRoundedRect(this.tooltip.x - this.tooltip.width / 2, this.tooltip.y - this.tooltip.height * 0.9, this.tooltip.width, this.tooltip.height * 1.2, 5);
-            renderer.restore();
-            renderer.render(this.tooltip);
-            renderer.context.globalCompositeOperation = "lighter";
-        }
-        super.render(renderer);
-        renderer.restore();
+    createSprite() {
+        const sprite = new Sprite(this.texture);
+        sprite.size.set(32, 32);
+        return sprite;
     }
 }
 class Spritesheet extends Widget {
@@ -516,13 +577,4 @@ class Spritesheet extends Widget {
     }
 }
 Spritesheet.spriteIdAnimator = () => new NumberAnimator("spriteId");
-class WidgetHolder extends Widget {
-    set content(widget) {
-        const children = this.children.slice();
-        for (let child of children) {
-            this.removeChild(child);
-        }
-        this.addChild(widget);
-    }
-}
 //# sourceMappingURL=app.js.map
