@@ -8,8 +8,7 @@ class Room extends Widget {
     private debug = new Label();
     private itemLayer = new Widget();
     private cityParallax = new CityParallax();
-    private rightHand = new ItemHand(false, "x");
-    private leftHand = new ItemHand(true, "z");
+    private itemHandPanel = new ItemHandPanel();
 
     constructor() {
         super();
@@ -28,17 +27,16 @@ class Room extends Widget {
         this.addChild(this.itemLayer);
         this.addChild(this.player);
         this.addChild(light);
-        this.rightHand.position.set(720, 120);
-        this.addChild(this.rightHand);
-        this.leftHand.position.set(250, 120);
-        this.addChild(this.leftHand);
+        this.itemHandPanel.position.set(485, 120);
+        this.addChild(this.itemHandPanel);
         document.body.onmousemove = ev => {
             this.mousePosition = new Vector2(ev.x - game.renderer.view.offsetLeft, ev.y - game.renderer.view.offsetTop);
         };
         this.debug.fontColor = Color.white;
         this.addChild(this.debug);
         const apple = this.createItem(ItemType.Apple);
-        this.itemLayer.addChild(apple);
+        this.itemHandPanel.showItem(apple);
+        //this.itemLayer.addChild(apple);
     }
 
     update(delta: number): void {
@@ -159,7 +157,7 @@ class Item extends Sprite {
     }
 
     update(delta: number): void {
-        this.position = this.transformer.toIsometric(this.cartesianPosition);
+        //this.position = this.transformer.toIsometric(this.cartesianPosition);
     }
 
     render(renderer: Renderer): void {

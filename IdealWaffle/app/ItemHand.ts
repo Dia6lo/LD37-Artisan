@@ -28,3 +28,29 @@ class ItemHand extends Widget {
         renderer.restore();
     }
 }
+
+class ItemHandPanel extends Widget {
+    private rightHand = new ItemHand(false, "x");
+    private leftHand = new ItemHand(true, "z");
+    private itemHolder = new WidgetHolder();
+
+    constructor() {
+        super();
+        this.size.set(440, 100);
+        this.pivot = Vector2.half;
+        this.rightHand.position.set(this.size.x, this.size.y / 2);
+        this.addChild(this.rightHand);
+        this.leftHand.position.set(0, this.size.y / 2);
+        this.addChild(this.leftHand);
+        this.itemHolder.pivot = Vector2.half;
+        this.itemHolder.position = this.size.divide(2);
+        this.addChild(this.itemHolder);
+    }
+
+    showItem(item: Item) {
+        item.highlighted = true;
+        item.position = Vector2.zero;
+        item.pivot = Vector2.half;
+        this.itemHolder.content = item;
+    }
+}

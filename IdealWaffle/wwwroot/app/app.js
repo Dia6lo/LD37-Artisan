@@ -120,6 +120,29 @@ class ItemHand extends Widget {
         renderer.restore();
     }
 }
+class ItemHandPanel extends Widget {
+    constructor() {
+        super();
+        this.rightHand = new ItemHand(false, "x");
+        this.leftHand = new ItemHand(true, "z");
+        this.itemHolder = new WidgetHolder();
+        this.size.set(440, 100);
+        this.pivot = Vector2.half;
+        this.rightHand.position.set(this.size.x, this.size.y / 2);
+        this.addChild(this.rightHand);
+        this.leftHand.position.set(0, this.size.y / 2);
+        this.addChild(this.leftHand);
+        this.itemHolder.pivot = Vector2.half;
+        this.itemHolder.position = this.size.divide(2);
+        this.addChild(this.itemHolder);
+    }
+    showItem(item) {
+        item.highlighted = true;
+        item.position = Vector2.zero;
+        item.pivot = Vector2.half;
+        this.itemHolder.content = item;
+    }
+}
 class LoadingScreen extends Widget {
     constructor() {
         super();
@@ -299,8 +322,7 @@ class Room extends Widget {
         this.debug = new Label();
         this.itemLayer = new Widget();
         this.cityParallax = new CityParallax();
-        this.rightHand = new ItemHand(false, "x");
-        this.leftHand = new ItemHand(true, "z");
+        this.itemHandPanel = new ItemHandPanel();
         this.cityParallax.position = new Vector2(304, 76);
         this.addChild(this.cityParallax);
         this.room.size = new Vector2(886, 554);
@@ -316,17 +338,15 @@ class Room extends Widget {
         this.addChild(this.itemLayer);
         this.addChild(this.player);
         this.addChild(light);
-        this.rightHand.position.set(720, 120);
-        this.addChild(this.rightHand);
-        this.leftHand.position.set(250, 120);
-        this.addChild(this.leftHand);
+        this.itemHandPanel.position.set(485, 120);
+        this.addChild(this.itemHandPanel);
         document.body.onmousemove = ev => {
             this.mousePosition = new Vector2(ev.x - game.renderer.view.offsetLeft, ev.y - game.renderer.view.offsetTop);
         };
         this.debug.fontColor = Color.white;
         this.addChild(this.debug);
         const apple = this.createItem(0);
-        this.itemLayer.addChild(apple);
+        this.itemHandPanel.showItem(apple);
     }
     update(delta) {
         this.updateCharacterPosition();
@@ -434,7 +454,6 @@ class Item extends Sprite {
         this.tooltip.verticalTextAlignment = TextAlignment.Center;
     }
     update(delta) {
-        this.position = this.transformer.toIsometric(this.cartesianPosition);
     }
     render(renderer) {
         renderer.save();
