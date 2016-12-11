@@ -9,7 +9,8 @@ class AssetBundle {
             AssetBundle.playerIdleSheet,
             AssetBundle.playerWalkSheet,
             AssetBundle.rightHand,
-            AssetBundle.leftHand
+            AssetBundle.leftHand,
+            AssetBundle.gui
         ];
     }
     get loaded() {
@@ -43,6 +44,7 @@ AssetBundle.playerIdleSheet = AssetBundle.createPath("PlayerIdleSheet.png");
 AssetBundle.playerWalkSheet = AssetBundle.createPath("PlayerWalkSheet.png");
 AssetBundle.leftHand = AssetBundle.createPath("LeftHand.png");
 AssetBundle.rightHand = AssetBundle.createPath("RightHand.png");
+AssetBundle.gui = AssetBundle.createPath("Gui.png");
 class CityParallax extends Widget {
     constructor() {
         super();
@@ -174,7 +176,7 @@ class HandItemView extends Widget {
         sprite.position = this.size.divide(2).add(new Vector2(0, 5));
         this.addChild(sprite);
         const tooltip = new ItemTooltip(item);
-        tooltip.y = -10;
+        tooltip.position = this.size.divide(2).subtract(new Vector2(0, 35));
         this.addChild(tooltip);
     }
     render(renderer) {
@@ -183,24 +185,34 @@ class HandItemView extends Widget {
         super.render(renderer);
     }
 }
-class ItemTooltip extends Label {
+class GuiFrame extends NineGrid {
+    constructor() {
+        super(Texture.fromImage(AssetBundle.gui));
+        this.left = 5;
+        this.right = 5;
+        this.top = 5;
+        this.bottom = 5;
+    }
+}
+class ItemTooltip extends GuiFrame {
     constructor(item) {
-        super(item.name);
-        this.horizontalTextAlignment = TextAlignment.Center;
-        this.verticalTextAlignment = TextAlignment.Center;
+        super();
+        this.nameLabel = new Label();
+        this.nameLabel.text = item.name;
+        this.nameLabel.pivot = Vector2.half;
+        this.nameLabel.fontColor = Color.fromComponents(84, 81, 76);
+        this.nameLabel.horizontalTextAlignment = TextAlignment.Center;
+        this.nameLabel.verticalTextAlignment = TextAlignment.Center;
+        this.pivot = Vector2.half;
+        this.addChild(this.nameLabel);
     }
     render(renderer) {
         renderer.save();
         const fontSize = 32;
         game.setPixelFont(fontSize);
-        const measure = new Vector2(renderer.measureText(this.text), fontSize);
-        this.size = measure.add(new Vector2(10, 0));
-        renderer.save();
-        renderer.vectorGraphics
-            .strokeStyle(2)
-            .fillStyle(Color.wheat)
-            .drawRoundedRect(0, 5, this.width, this.height, 5);
-        renderer.restore();
+        const measure = new Vector2(renderer.measureText(this.nameLabel.text), fontSize);
+        this.size = measure.add(new Vector2(15, 10));
+        this.nameLabel.position = this.size.divide(2).subtract(new Vector2(0, 5));
         super.render(renderer);
         renderer.restore();
     }
