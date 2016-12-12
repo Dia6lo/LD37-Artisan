@@ -3,6 +3,7 @@ class ItemHandPanel extends Widget {
     leftHand = new ItemHand(true);
     private itemHolder = new WidgetHolder();
     shownItem: DisplayableObject | undefined = undefined;
+    frozen: boolean;
 
     constructor(private room: Room) {
         super();
@@ -36,6 +37,10 @@ class ItemHandPanel extends Widget {
         const speed = 15;
         let destination: number;
         while (true) {
+            if (this.frozen) {
+                yield Wait.frame();
+                continue;
+            }
             if (game.input.isKeyPressed(key)) {
                 destination = end;
             }

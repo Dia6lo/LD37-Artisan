@@ -1,16 +1,13 @@
 ﻿class FadeScreen extends Widget {
-    private readonly label = new Label();
+    private readonly label;
     text = "Loading";
-    rendererHeight: number;
 
-    constructor(height: number) {
+    constructor(private readonly rendererSize: Vector2) {
         super();
-        this.rendererHeight = height;
-        this.label.fontColor = Color.white;
-        this.label.horizontalTextAlignment = TextAlignment.Center;
-        this.label.verticalTextAlignment = TextAlignment.Center;
+        this.label = this.createLabel();
+        this.label.position = rendererSize.divide(2);
         this.addChild(this.label);
-        this.tasks.add(this.updateLabelTask());
+        this.label.tasks.add(this.updateLabelTask());
     }
 
     private *updateLabelTask() {
@@ -26,12 +23,32 @@
         }
     }
 
+    setupEnding() {
+        const center = this.rendererSize.divide(2);
+        this.removeChild(this.label);
+        const textLabel = this.createLabel("I will make dreams come true. In a city that should not exist.");
+        textLabel.position = center.subtract(new Vector2(0, 18));
+        this.addChild(textLabel);
+        const gameOverLabel = this.createLabel("Game over?");
+        gameOverLabel.position = center.add(new Vector2(0, 18));
+        this.addChild(gameOverLabel);
+    }
+
+    private createLabel(text?: string) {
+        const label = new Label(text);
+        label.fontColor = Color.white;
+        label.horizontalTextAlignment = TextAlignment.Center;
+        label.verticalTextAlignment = TextAlignment.Center;
+        label.pivot = Vector2.half;
+        return label;
+    }
+
     fadeIn() {
-        this.tasks.add(this.moveTask(-this.rendererHeight, 0));
+        this.tasks.add(this.moveTask(-this.rendererSize.y, 0));
     }
 
     fadeOut() {
-        this.tasks.add(this.moveTask(0, -this.rendererHeight));
+        this.tasks.add(this.moveTask(0, -this.rendererSize.y));
     }
 
     private *moveTask(from: number, to: number) {
@@ -49,6 +66,15 @@
             .drawRect(0, 0, size.x, size.y);
         renderer.restore();
         this.label.size = size;
+        renderer.save();
+        game.setPixelFont(32);
+        for (let child of this.children) {
+            if (child instanceof Label) {
+                child.width = renderer.measureText(child.text);
+                child.height = 32;
+            }
+        }
         super.render(renderer);
+        renderer.restore();
     }
 }

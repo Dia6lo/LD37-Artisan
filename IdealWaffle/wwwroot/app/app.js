@@ -204,16 +204,14 @@ class CompoundItem extends DisplayableObject {
     }
 }
 class FadeScreen extends Widget {
-    constructor(height) {
+    constructor(rendererSize) {
         super();
-        this.label = new Label();
+        this.rendererSize = rendererSize;
         this.text = "Loading";
-        this.rendererHeight = height;
-        this.label.fontColor = Color.white;
-        this.label.horizontalTextAlignment = TextAlignment.Center;
-        this.label.verticalTextAlignment = TextAlignment.Center;
+        this.label = this.createLabel();
+        this.label.position = rendererSize.divide(2);
         this.addChild(this.label);
-        this.tasks.add(this.updateLabelTask());
+        this.label.tasks.add(this.updateLabelTask());
     }
     *updateLabelTask() {
         while (true) {
@@ -227,11 +225,29 @@ class FadeScreen extends Widget {
             yield Wait.seconds(0.5);
         }
     }
+    setupEnding() {
+        const center = this.rendererSize.divide(2);
+        this.removeChild(this.label);
+        const textLabel = this.createLabel("I will make dreams come true. In a city that should not exist.");
+        textLabel.position = center.subtract(new Vector2(0, 18));
+        this.addChild(textLabel);
+        const gameOverLabel = this.createLabel("Game over?");
+        gameOverLabel.position = center.add(new Vector2(0, 18));
+        this.addChild(gameOverLabel);
+    }
+    createLabel(text) {
+        const label = new Label(text);
+        label.fontColor = Color.white;
+        label.horizontalTextAlignment = TextAlignment.Center;
+        label.verticalTextAlignment = TextAlignment.Center;
+        label.pivot = Vector2.half;
+        return label;
+    }
     fadeIn() {
-        this.tasks.add(this.moveTask(-this.rendererHeight, 0));
+        this.tasks.add(this.moveTask(-this.rendererSize.y, 0));
     }
     fadeOut() {
-        this.tasks.add(this.moveTask(0, -this.rendererHeight));
+        this.tasks.add(this.moveTask(0, -this.rendererSize.y));
     }
     *moveTask(from, to) {
         for (let t of Task.linearMotion(0.5, from, to)) {
@@ -247,7 +263,16 @@ class FadeScreen extends Widget {
             .drawRect(0, 0, size.x, size.y);
         renderer.restore();
         this.label.size = size;
+        renderer.save();
+        game.setPixelFont(32);
+        for (let child of this.children) {
+            if (child instanceof Label) {
+                child.width = renderer.measureText(child.text);
+                child.height = 32;
+            }
+        }
         super.render(renderer);
+        renderer.restore();
     }
 }
 class Game extends Application {
@@ -471,6 +496,10 @@ class ItemHandPanel extends Widget {
         const speed = 15;
         let destination;
         while (true) {
+            if (this.frozen) {
+                yield Wait.frame();
+                continue;
+            }
             if (game.input.isKeyPressed(key)) {
                 destination = end;
             }
@@ -885,7 +914,7 @@ class Room extends Widget {
         this.player = new Player();
         this.transformer = new PositionTransformer();
         this.playerPosition = new Vector2(44, 65);
-        this.characterSpeed = 0.3;
+        this.characterSpeed = 1;
         this.debug = new Label();
         this.cityParallax = new CityParallax();
         this.items = [];
@@ -901,7 +930,7 @@ class Room extends Widget {
         this.questState = 0;
         this.movementBlocked = false;
         this.tvOpened = false;
-        this.fadeScreen = new FadeScreen(554);
+        this.fadeScreen = new FadeScreen(new Vector2(886, 554));
         this.questItems = [];
         this.onScreen = new Vector2(50, 335);
         this.offScreen = new Vector2(50, 600);
@@ -937,9 +966,11 @@ class Room extends Widget {
         this.spawnQuestItems();
         this.addChild(this.fadeScreen);
         assets.loaded.subscribe(this.onAssetsLoaded, this);
+        this.itemHandPanel.frozen = true;
     }
     onAssetsLoaded() {
         this.fadeScreen.fadeOut();
+        this.itemHandPanel.frozen = false;
     }
     spawnQuestItems() {
         for (let itemType of this.currentQuest.items) {
@@ -1005,6 +1036,7 @@ class Room extends Widget {
     }
     *sleepTask() {
         this.movementBlocked = true;
+        this.itemHandPanel.frozen = true;
         this.fadeScreen.text = "Sleeping";
         this.fadeScreen.fadeIn();
         yield Wait.seconds(0.5);
@@ -1017,6 +1049,7 @@ class Room extends Widget {
         this.fadeScreen.fadeOut();
         yield Wait.seconds(0.5);
         this.movementBlocked = false;
+        this.itemHandPanel.frozen = false;
     }
     onPostSpotInteract(item) {
         if (!item || !ItemFactory.isItemSpecial(item) || this.questState !== 1) {
@@ -1036,7 +1069,6 @@ class Room extends Widget {
         this.addChild(marker);
     }
     update(delta) {
-        game.setPixelFont(32);
         this.updateCharacterPosition();
         this.updateItemPanel();
         this.updateParallax();

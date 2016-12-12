@@ -3,7 +3,7 @@ class Room extends Widget {
     private player = new Player();
     private transformer = new PositionTransformer();
     private playerPosition = new Vector2(44, 65);
-    private characterSpeed = 0.3;
+    private characterSpeed = 1;
     private mousePosition: Vector2;
     private debug = new Label();
     private cityParallax = new CityParallax();
@@ -22,7 +22,7 @@ class Room extends Widget {
     private movementBlocked = false;
     private tvOpened = false;
     private tvMessage: MessageBox;
-    private readonly fadeScreen = new FadeScreen(554);
+    private readonly fadeScreen = new FadeScreen(new Vector2(886, 554));
     private questItems: Item[] = [];
 
     constructor() {
@@ -64,10 +64,12 @@ class Room extends Widget {
         this.spawnQuestItems();
         this.addChild(this.fadeScreen);
         assets.loaded.subscribe(this.onAssetsLoaded, this);
+        this.itemHandPanel.frozen = true;
     }
 
     private onAssetsLoaded(): void {
         this.fadeScreen.fadeOut();
+        this.itemHandPanel.frozen = false;
     }
 
     private spawnQuestItems() {
@@ -96,6 +98,7 @@ class Room extends Widget {
             this.tvMessage.opacity = 0;
         }
         else {
+
             this.tvMessage.tasks.add(this.slideOutMessage(this.tvMessage));
         }
         return false;
@@ -144,6 +147,7 @@ class Room extends Widget {
 
     private *sleepTask() {
         this.movementBlocked = true;
+        this.itemHandPanel.frozen = true;
         this.fadeScreen.text = "Sleeping";
         this.fadeScreen.fadeIn();
         yield Wait.seconds(0.5);
@@ -156,6 +160,7 @@ class Room extends Widget {
         this.fadeScreen.fadeOut();
         yield Wait.seconds(0.5);
         this.movementBlocked = false;
+        this.itemHandPanel.frozen = false;
     }
 
     private onPostSpotInteract(item?: Item) {
@@ -178,7 +183,6 @@ class Room extends Widget {
     }
 
     update(delta: number): void {
-        game.setPixelFont(32);
         this.updateCharacterPosition();
         this.updateItemPanel();
         this.updateParallax();
