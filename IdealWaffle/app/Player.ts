@@ -7,6 +7,7 @@ class Player extends Widget {
     private idle;
     private spriteHolder = new WidgetHolder();
     private readonly animationName = "Animation";
+    private stepSound = game.audio.play("assets/steps.mp3", true, 0);
 
     constructor() {
         super();
@@ -35,6 +36,7 @@ class Player extends Widget {
         if (this.idle) {
             return;
         }
+        this.stepSound.pause();
         this.idle = true;
         this.spriteHolder.content = this.idleSpriteSheet;
         this.idleSpriteSheet.runAnimation(this.animationName);
@@ -44,6 +46,7 @@ class Player extends Widget {
         if (!this.idle) {
             return;
         }
+        this.stepSound = game.audio.play("assets/steps.mp3", true, 0.25);
         this.idle = false;
         this.spriteHolder.content = this.walkSpriteSheet;
         this.walkSpriteSheet.runAnimation(this.animationName);

@@ -86,6 +86,7 @@ class AudioPlayer {
         audioElement.loop = loop;
         audioElement.volume = volume;
         audioElement.play();
+        return audioElement;
     }
 }
 class EventObserver {

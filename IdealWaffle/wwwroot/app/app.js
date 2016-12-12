@@ -621,6 +621,7 @@ class Player extends Widget {
         this.spriteSize = new Vector2(20, 59);
         this.spriteHolder = new WidgetHolder();
         this.animationName = "Animation";
+        this.stepSound = game.audio.play("assets/steps.mp3", true, 0);
         this.size = this.widgetSize;
         this.setupAnimation(this.idleSpriteSheet, 4, 15);
         this.setupAnimation(this.walkSpriteSheet, 8, 12);
@@ -643,6 +644,7 @@ class Player extends Widget {
         if (this.idle) {
             return;
         }
+        this.stepSound.pause();
         this.idle = true;
         this.spriteHolder.content = this.idleSpriteSheet;
         this.idleSpriteSheet.runAnimation(this.animationName);
@@ -651,6 +653,7 @@ class Player extends Widget {
         if (!this.idle) {
             return;
         }
+        this.stepSound = game.audio.play("assets/steps.mp3", true, 0.25);
         this.idle = false;
         this.spriteHolder.content = this.walkSpriteSheet;
         this.walkSpriteSheet.runAnimation(this.animationName);
