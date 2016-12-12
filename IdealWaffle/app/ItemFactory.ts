@@ -83,6 +83,8 @@ class ItemFactory {
                 return this.constructItem(AssetBundle.timeMachine, "Time Machine");
             case ItemType.Unicorn:
                 return this.constructItem(AssetBundle.unicorn, "Unicorn");
+            case ItemType.Pineapple:
+                return this.constructItem(AssetBundle.pineapple, "Pineapple");
             default:
                 throw "Error creating item";
         }

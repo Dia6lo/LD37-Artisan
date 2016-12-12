@@ -23,5 +23,6 @@ const enum ItemType {
     Smoke,
     Spyglass,
     TimeMachine,
-    Unicorn
+    Unicorn,
+    Pineapple
 }

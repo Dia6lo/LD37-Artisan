@@ -53,7 +53,7 @@ class AssetBundle {
     static readonly spyglass = AssetBundle.createItemPath("Spyglass.png");
     static readonly timeMachine = AssetBundle.createItemPath("TimeMachine.png");
     static readonly unicorn = AssetBundle.createItemPath("Unicorn.png");
-
+    static readonly pineapple = AssetBundle.createItemPath("Pineapple.png");
 
     private readonly imageUrls = [
         AssetBundle.room,
@@ -101,7 +101,8 @@ class AssetBundle {
         AssetBundle.smoke,
         AssetBundle.spyglass,
         AssetBundle.timeMachine,
-        AssetBundle.unicorn
+        AssetBundle.unicorn,
+        AssetBundle.pineapple
     ];
 
     private static createPath(file: string) {

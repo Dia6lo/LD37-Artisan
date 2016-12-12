@@ -10,7 +10,7 @@ class Quest {
     static createStory(): Quest[] {
         return [
             {
-                items: [ItemType.Pipe, ItemType.Lighter, ItemType.Apple, ItemType.Clock, ItemType.Cat],
+                items: [ItemType.Pipe, ItemType.Lighter, ItemType.Apple, ItemType.Clock, ItemType.Cat, ItemType.Pen, ItemType.Pen, ItemType.Pineapple],
                 nickname: "",
                 briefing: [
                     "Good day, Artis@n! I have a great plan and I need",

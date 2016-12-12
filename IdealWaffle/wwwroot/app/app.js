@@ -45,7 +45,8 @@ class AssetBundle {
             AssetBundle.smoke,
             AssetBundle.spyglass,
             AssetBundle.timeMachine,
-            AssetBundle.unicorn
+            AssetBundle.unicorn,
+            AssetBundle.pineapple
         ];
     }
     get loaded() {
@@ -118,6 +119,7 @@ AssetBundle.smoke = AssetBundle.createItemPath("Smoke.png");
 AssetBundle.spyglass = AssetBundle.createItemPath("Spyglass.png");
 AssetBundle.timeMachine = AssetBundle.createItemPath("TimeMachine.png");
 AssetBundle.unicorn = AssetBundle.createItemPath("Unicorn.png");
+AssetBundle.pineapple = AssetBundle.createItemPath("Pineapple.png");
 class CityParallax extends Widget {
     constructor() {
         super();
@@ -201,14 +203,60 @@ class CompoundItem extends DisplayableObject {
         return compound;
     }
 }
+class FadeScreen extends Widget {
+    constructor(height) {
+        super();
+        this.label = new Label();
+        this.text = "Loading";
+        this.rendererHeight = height;
+        this.label.fontColor = Color.white;
+        this.label.horizontalTextAlignment = TextAlignment.Center;
+        this.label.verticalTextAlignment = TextAlignment.Center;
+        this.addChild(this.label);
+        this.tasks.add(this.updateLabelTask());
+    }
+    *updateLabelTask() {
+        while (true) {
+            this.label.text = `${this.text}`;
+            yield Wait.seconds(0.5);
+            this.label.text = `${this.text}.`;
+            yield Wait.seconds(0.5);
+            this.label.text = `${this.text}..`;
+            yield Wait.seconds(0.5);
+            this.label.text = `${this.text}...`;
+            yield Wait.seconds(0.5);
+        }
+    }
+    fadeIn() {
+        this.tasks.add(this.moveTask(-this.rendererHeight, 0));
+    }
+    fadeOut() {
+        this.tasks.add(this.moveTask(0, -this.rendererHeight));
+    }
+    *moveTask(from, to) {
+        for (let t of Task.linearMotion(0.5, from, to)) {
+            this.y = t;
+            yield Wait.frame();
+        }
+    }
+    render(renderer) {
+        const size = renderer.size;
+        renderer.save();
+        renderer.vectorGraphics
+            .fillStyle(Color.black)
+            .drawRect(0, 0, size.x, size.y);
+        renderer.restore();
+        this.label.size = size;
+        super.render(renderer);
+    }
+}
 class Game extends Application {
     constructor() {
         super(886, 554);
-        this.state = 0;
         this.assets = new AssetBundle();
         this.renderer.backgroundColor = Color.black;
         this.assets.loaded.subscribe(this.onAssetsLoaded, this);
-        this.loadingScreen = new LoadingScreen();
+        this.loadingScreen = new FadeScreen(554);
         this.room = new Room();
         this.root = new Widget();
         this.root.addChild(this.room);
@@ -216,15 +264,7 @@ class Game extends Application {
         this.renderer.imageSmoothing = false;
     }
     onAssetsLoaded() {
-        this.state = 1;
-        this.root.tasks.add(this.moveOutLoadingScreenTask());
-    }
-    *moveOutLoadingScreenTask() {
-        for (let t of Task.linearMotion(0.5, 0, -this.renderer.height)) {
-            this.loadingScreen.position.y = t;
-            yield Wait.frame();
-        }
-        this.state = 2;
+        this.loadingScreen.fadeOut();
     }
     run() {
         super.run();
@@ -345,6 +385,8 @@ class ItemFactory {
                 return this.constructItem(AssetBundle.timeMachine, "Time Machine");
             case 24:
                 return this.constructItem(AssetBundle.unicorn, "Unicorn");
+            case 25:
+                return this.constructItem(AssetBundle.pineapple, "Pineapple");
             default:
                 throw "Error creating item";
         }
@@ -476,39 +518,6 @@ class ItemHandPanel extends Widget {
             }
             yield Wait.frame();
         }
-    }
-}
-class LoadingScreen extends Widget {
-    constructor() {
-        super();
-        this.label = new Label();
-        this.label.fontColor = Color.white;
-        this.label.horizontalTextAlignment = TextAlignment.Center;
-        this.label.verticalTextAlignment = TextAlignment.Center;
-        this.addChild(this.label);
-        this.tasks.add(this.updateLabelTask());
-    }
-    *updateLabelTask() {
-        while (true) {
-            this.label.text = "Loading";
-            yield Wait.seconds(0.5);
-            this.label.text = "Loading.";
-            yield Wait.seconds(0.5);
-            this.label.text = "Loading..";
-            yield Wait.seconds(0.5);
-            this.label.text = "Loading...";
-            yield Wait.seconds(0.5);
-        }
-    }
-    render(renderer) {
-        const size = renderer.size;
-        renderer.save();
-        renderer.vectorGraphics
-            .fillStyle(Color.black)
-            .drawRect(0, 0, size.x, size.y);
-        renderer.restore();
-        this.label.size = size;
-        super.render(renderer);
     }
 }
 class Marker extends Sprite {
@@ -746,7 +755,7 @@ class Quest {
     static createStory() {
         return [
             {
-                items: [17, 14, 0, 6, 4],
+                items: [17, 14, 0, 6, 4, 15, 15, 25],
                 nickname: "",
                 briefing: [
                     "Good day, Artis@n! I have a great plan and I need",
