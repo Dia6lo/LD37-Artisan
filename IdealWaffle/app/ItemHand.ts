@@ -24,7 +24,7 @@ class ItemHand extends Widget {
         this.item = item;
         this.contentHolder.clear();
         if (item) {
-            this.contentHolder.content = item.itemView;
+            this.contentHolder.content = item.displayView;
         }
     }
 }

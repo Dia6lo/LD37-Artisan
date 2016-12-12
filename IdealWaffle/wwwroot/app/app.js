@@ -120,28 +120,6 @@ class HandItemView extends Widget {
         this.addChild(tooltip);
     }
 }
-class Item extends Sprite {
-    constructor(cartesianPosition, texture, name) {
-        super();
-        this.cartesianPosition = cartesianPosition;
-        this.isActive = true;
-        this.texture = texture;
-        this.pivot = new Vector2(0.5, 1);
-        this.size = new Vector2(32, 32);
-        this.name = name;
-        this.itemView = new HandItemView(this);
-    }
-    createSprite() {
-        const sprite = new Sprite(this.texture);
-        sprite.size.set(32, 32);
-        return sprite;
-    }
-}
-class CompoundItem extends Item {
-    constructor() {
-        super();
-    }
-}
 class ItemHand extends Widget {
     constructor(flipped) {
         super();
@@ -165,7 +143,7 @@ class ItemHand extends Widget {
         this.item = item;
         this.contentHolder.clear();
         if (item) {
-            this.contentHolder.content = item.itemView;
+            this.contentHolder.content = item.displayView;
         }
     }
 }
@@ -190,7 +168,7 @@ class ItemHandPanel extends Widget {
     }
     showItem(item) {
         if (item) {
-            this.itemHolder.content = item.itemView;
+            this.itemHolder.content = item.displayView;
         }
         else {
             this.itemHolder.clear();
@@ -208,13 +186,12 @@ class ItemHandPanel extends Widget {
                 destination = end;
             }
             else {
-                if (hand.x === end && hand.item !== undefined && !justPickedUp) {
+                if (hand.x === end && hand.item && !justPickedUp) {
                     const item = hand.item;
                     this.showItem(item);
-                    item.isActive = true;
                     item.opacity = 1;
                     hand.holdItem(undefined);
-                    item.onrelease();
+                    item.onput();
                 }
                 justPickedUp = false;
                 destination = start;
@@ -226,12 +203,12 @@ class ItemHandPanel extends Widget {
                 if ((direction < 0 && hand.x < destination) || (direction > 0 && hand.x > destination)) {
                     hand.x = destination;
                 }
-                if (hand.x === destination && destination === end && this.shownItem !== undefined) {
+                if (hand.x === destination && destination === end && this.shownItem && !hand.item) {
                     const item = this.shownItem;
                     hand.holdItem(item);
-                    item.isActive = false;
                     item.opacity = 0;
                     this.showItem(undefined);
+                    item.onpickup();
                     justPickedUp = true;
                 }
             }
@@ -499,7 +476,7 @@ class Room extends Widget {
         light.size = new Vector2(440, 440);
         light.pivot = Vector2.half;
         light.position = new Vector2(446, 132);
-        light.opacity = 0.6;
+        light.opacity = 0.8;
         this.tasks.add(this.updateLightTask(light));
         this.addChild(this.roomObjects);
         this.roomObjects.addChild(this.player);
@@ -511,8 +488,9 @@ class Room extends Widget {
         };
         this.debug.fontColor = Color.white;
         const apple = this.createItem(0);
-        this.roomObjects.addChild(apple);
-        this.items.push(apple);
+        const apple1 = this.createItem(0);
+        this.addItem(apple);
+        this.addItem(apple1);
     }
     update(delta) {
         game.setPixelFont(32);
@@ -534,18 +512,14 @@ class Room extends Widget {
     }
     *updateLightTask(light) {
         while (true) {
-            const random = Math.random();
-            if (random > 0.6) {
-                for (let t of Task.sineMotion(3, 0.6, 1)) {
-                    light.opacity = t;
-                    yield Wait.frame();
-                }
-                for (let t of Task.sineMotion(3, 1, 0.6)) {
-                    light.opacity = t;
-                    yield Wait.frame();
-                }
+            for (let t of Task.sineMotion(5, 0.8, 1)) {
+                light.opacity = t;
+                yield Wait.frame();
             }
-            yield Wait.seconds(1);
+            for (let t of Task.sineMotion(5, 1, 0.8)) {
+                light.opacity = t;
+                yield Wait.frame();
+            }
         }
     }
     updateCharacterPosition() {
@@ -583,8 +557,6 @@ class Room extends Widget {
     }
     updateItemHighlights() {
         for (let item of this.items) {
-            if (!item.isActive)
-                continue;
             item.position = this.transformer.toIsometric(item.cartesianPosition);
             const closeEnough = this.playerPosition.subtract(item.cartesianPosition).length <= 7;
             if (closeEnough) {
@@ -621,22 +593,93 @@ class Room extends Widget {
     }
     createItem(type) {
         const item = this.getItemObject(type);
-        item.onrelease = () => {
+        item.onpickup = () => {
+            this.removeItem(item);
+        };
+        item.onput = () => {
+            this.addItem(item);
             item.cartesianPosition = this.playerPosition;
             item.position = this.transformer.toIsometric(item.cartesianPosition);
         };
         return item;
     }
+    addItem(item) {
+        this.roomObjects.addChild(item);
+        this.items.push(item);
+    }
+    removeItem(item) {
+        this.roomObjects.removeChild(item);
+        const index = this.items.indexOf(item);
+        if (index !== -1) {
+            this.items.splice(index, 1);
+        }
+    }
     getItemObject(type) {
         switch (type) {
             case 0:
-                return new Item(new Vector2(50, 50), Texture.fromImage(AssetBundle.apple), "Apple");
+                return new SimpleItem(Texture.fromImage(AssetBundle.apple), new Vector2(32, 32), "Apple");
             default:
                 throw "Error creating item";
         }
     }
     toStringV2(vector) {
         return `${vector.x} ${vector.y}`;
+    }
+}
+class DisplayableObject extends Widget {
+    constructor() {
+        super(...arguments);
+        this.onpickup = () => { };
+        this.onput = () => { };
+        this.oninteract = () => { };
+        this.pickable = true;
+    }
+}
+class SimpleItem extends DisplayableObject {
+    constructor(texture, size, name) {
+        super();
+        this.image = new Sprite();
+        this.cartesianPosition = new Vector2(50, 50);
+        this.image.texture = texture;
+        this.image.pivot = new Vector2(0.5, 1);
+        this.image.size = size;
+        this.addChild(this.image);
+        this.name = name;
+        this.displayView = new HandItemView(this);
+    }
+    createSprite() {
+        const sprite = new Sprite(this.image.texture);
+        sprite.size = this.image.size.clone();
+        return sprite;
+    }
+}
+class CompoundItem extends DisplayableObject {
+    constructor(parts) {
+        super();
+        this.parts = parts;
+        this.cartesianPosition = new Vector2(50, 50);
+        this.name = "";
+        for (let item of parts) {
+            this.name += `${item.name}-`;
+        }
+        this.name = this.name.substr(0, this.name.length - 1);
+        this.displayView = new HandItemView(this);
+    }
+    createSprite() {
+        const compound = new Widget();
+        let width = 0;
+        let height = 0;
+        for (let item of this.parts) {
+            const sprite = item.createSprite();
+            sprite.x = width === 0 ? width : width - 5;
+            compound.addChild(sprite);
+            width += sprite.width - 5;
+            if (sprite.height > height) {
+                height = sprite.height;
+            }
+        }
+        compound.size.set(width, height);
+        return compound;
     }
 }
 class Spritesheet extends Widget {

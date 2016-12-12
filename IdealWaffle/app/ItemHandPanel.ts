@@ -1,8 +1,8 @@
 class ItemHandPanel extends Widget {
-    private rightHand = new ItemHand(false);
-    private leftHand = new ItemHand(true);
+    rightHand = new ItemHand(false);
+    leftHand = new ItemHand(true);
     private itemHolder = new WidgetHolder();
-    shownItem: Item | undefined = undefined;
+    shownItem: DisplayableObject | undefined = undefined;
 
     constructor() {
         super();
@@ -19,9 +19,9 @@ class ItemHandPanel extends Widget {
         this.addChild(this.itemHolder);
     }
 
-    showItem(item: Item | undefined) {
+    showItem(item: DisplayableObject | undefined) {
         if (item) {
-            this.itemHolder.content = item.itemView;
+            this.itemHolder.content = item.displayView;
         }
         else {
             this.itemHolder.clear();
@@ -40,13 +40,12 @@ class ItemHandPanel extends Widget {
                 destination = end;
             }
             else {
-                if (hand.x === end && hand.item !== undefined && !justPickedUp) {
-                    const item = hand.item;
+                if (hand.x === end && hand.item && !justPickedUp) {
+                    const item = hand.item as SimpleItem;
                     this.showItem(item);
-                    item.isActive = true;
                     item.opacity = 1;
                     hand.holdItem(undefined);
-                    item.onrelease();
+                    item.onput();
                 }
                 justPickedUp = false;
                 destination = start;
@@ -58,12 +57,12 @@ class ItemHandPanel extends Widget {
                 if ((direction < 0 && hand.x < destination) || (direction > 0 && hand.x > destination)) {
                     hand.x = destination;
                 }
-                if (hand.x === destination && destination === end && this.shownItem !== undefined) {
-                    const item = this.shownItem;
+                if (hand.x === destination && destination === end && this.shownItem && !hand.item) {
+                    const item = this.shownItem as SimpleItem;
                     hand.holdItem(item);
-                    item.isActive = false;
                     item.opacity = 0;
                     this.showItem(undefined);
+                    item.onpickup();
                     justPickedUp = true;
                 }
             }

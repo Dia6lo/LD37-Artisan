@@ -22,7 +22,7 @@ class Room extends Widget {
         light.size = new Vector2(440, 440);
         light.pivot = Vector2.half;
         light.position = new Vector2(446, 132);
-        light.opacity = 0.6;
+        light.opacity = 0.8;
         this.tasks.add(this.updateLightTask(light));
         this.addChild(this.roomObjects);
         this.roomObjects.addChild(this.player);
@@ -39,10 +39,11 @@ class Room extends Widget {
         //newsLabel.position.set(-10, 505);
         //this.addChild(newsLabel);
         const apple = this.createItem(ItemType.Apple);
+        const apple1 = this.createItem(ItemType.Apple);
+        this.addItem(apple);
+        this.addItem(apple1);
+        //this.itemHandPanel.leftHand.holdItem(compoundItem);
 
-        //this.itemHandPanel.showItem(apple);
-        this.roomObjects.addChild(apple);
-        this.items.push(apple);
     }
 
     update(delta: number): void {
@@ -67,18 +68,14 @@ class Room extends Widget {
 
     private *updateLightTask(light: Sprite) {
         while (true) {
-            const random = Math.random();
-            if (random > 0.6) {
-                for (let t of Task.sineMotion(3, 0.6, 1)) {
-                    light.opacity = t;
-                    yield Wait.frame();
-                }
-                for (let t of Task.sineMotion(3, 1, 0.6)) {
-                    light.opacity = t;
-                    yield Wait.frame();
-                }
+            for (let t of Task.sineMotion(5, 0.8, 1)) {
+                light.opacity = t;
+                yield Wait.frame();
             }
-            yield Wait.seconds(1);
+            for (let t of Task.sineMotion(5, 1, 0.8)) {
+                light.opacity = t;
+                yield Wait.frame();
+            }
         }
     }
 
@@ -118,7 +115,6 @@ class Room extends Widget {
 
     private updateItemHighlights() {
         for (let item of this.items) {
-            if (!item.isActive) continue;
             item.position = this.transformer.toIsometric(item.cartesianPosition);
             const closeEnough = this.playerPosition.subtract(item.cartesianPosition).length <= 7;
             if (closeEnough) {
@@ -156,19 +152,36 @@ class Room extends Widget {
         }
     }
 
-    createItem(type: ItemType): Item {
+    createItem(type: ItemType): SimpleItem {
         const item = this.getItemObject(type);
-        item.onrelease = () => {
+        item.onpickup = () => {
+            this.removeItem(item);
+        };
+        item.onput = () => {
+            this.addItem(item);
             item.cartesianPosition = this.playerPosition;
             item.position = this.transformer.toIsometric(item.cartesianPosition);
         };
         return item;
     }
 
+    private addItem(item: Item) {
+        this.roomObjects.addChild(item);
+        this.items.push(item);
+    }
+
+    private removeItem(item: Item) {
+        this.roomObjects.removeChild(item);
+        const index = this.items.indexOf(item);
+        if (index !== -1) {
+            this.items.splice(index, 1);
+        }
+    }
+
     private getItemObject(type: ItemType) {
         switch (type) {
             case ItemType.Apple:
-                return new Item(new Vector2(50, 50), Texture.fromImage(AssetBundle.apple), "Apple");
+                return new SimpleItem(Texture.fromImage(AssetBundle.apple), new Vector2(32, 32), "Apple");
             default:
                 throw "Error creating item";
         }
