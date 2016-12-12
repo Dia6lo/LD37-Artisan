@@ -1,15 +1,27 @@
+class DisplayableObject extends Widget {
+    onpickup: () => void = () => { };
+    onput: () => void = () => { };
+    oninteract: (item?: Item) => void = () => { };
+    displayView: Widget;
+    pickable = true;
+}
+
+class SpecialSpot extends DisplayableObject {
+    pickable = false;
+
+    constructor(texture: Texture, tooltip: string) {
+        super();
+        const sprite = new Sprite(texture);
+        sprite.size.set(32, 32);
+        sprite.pivot = Vector2.half;
+        this.displayView = new PanelObjectView(sprite, tooltip);
+    }
+}
+
 interface Item extends DisplayableObject {
     readonly name: string;
     createSprite(): Widget;
     cartesianPosition: Vector2;
-}
-
-class DisplayableObject extends Widget {
-    onpickup: () => void = () => { };
-    onput: () => void = () => { };
-    oninteract: () => void = () => { };
-    displayView: Widget;
-    pickable = true;
 }
 
 class SimpleItem extends DisplayableObject implements Item {

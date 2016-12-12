@@ -11,8 +11,11 @@ class Room extends Widget {
     private items: Item[] = [];
     private roomObjects = new Widget();
     private tvMarker = new Marker();
+    private tvSpot = new SpecialSpot(Texture.fromImage(AssetBundle.watchTv), "Read last messages");
     private bedMarker = new Marker();
+    private bedSpot = new SpecialSpot(Texture.fromImage(AssetBundle.sleep), "Go to bed");
     private postMarker = new Marker();
+    private postSpot = new SpecialSpot(Texture.fromImage(AssetBundle.send), "Send requested item");
 
     constructor() {
         super();
@@ -42,15 +45,15 @@ class Room extends Widget {
         //newsLabel.fontColor = Color.fromComponents(41, 196, 191);
         //newsLabel.position.set(-10, 505);
         //this.addChild(newsLabel);
-        const apple = this.createItem(ItemType.Apple);
-        const apple1 = this.createItem(ItemType.Apple);
-        const apple2 = this.createItem(ItemType.Apple);
-        this.addItem(apple);
-        this.addItem(apple1);
-        this.addItem(apple2);
         this.setupMarker(this.tvMarker, 268, 145);
+        this.tvSpot.oninteract = item => this.onTvSpotInteract(item);
         this.setupMarker(this.bedMarker, 165, 305);
         this.setupMarker(this.postMarker, 725, 320);
+    }
+
+    private onTvSpotInteract(item?: Item) {
+        const apple = this.createItem(ItemType.Apple);
+        this.addItem(apple);
     }
 
     private setupMarker(marker: Marker, x: number, y: number) {
@@ -61,7 +64,7 @@ class Room extends Widget {
     update(delta: number): void {
         game.setPixelFont(32);
         this.updateCharacterPosition();
-        this.updateItemHighlights();
+        this.updateItemPanel();
         this.updateParallax();
         this.sortRoomObjects();
         super.update(delta);
@@ -125,7 +128,7 @@ class Room extends Widget {
         }
     }
 
-    private updateItemHighlights() {
+    private updateItemPanel() {
         for (let item of this.items) {
             item.position = this.transformer.toIsometric(item.cartesianPosition);
             const closeEnough = this.playerPosition.subtract(item.cartesianPosition).length <= 7;
@@ -136,7 +139,32 @@ class Room extends Widget {
                 return;
             }
         }
+        if (
+            this.setSpecialSpotIfPossible(this.transformer.tv, this.tvSpot) ||
+            this.setSpecialSpotIfPossible(this.transformer.bed, this.bedSpot) ||
+            this.setSpecialSpotIfPossible(this.transformer.post, this.postSpot)
+        ) {
+            return;
+        }
         this.itemHandPanel.showItem(undefined);
+    }
+
+    private setSpecialSpotIfPossible(bounds: Rectangle, spot: SpecialSpot) {
+        if (this.isNearby(bounds)) {
+            if (this.itemHandPanel.shownItem !== spot) {
+                this.itemHandPanel.showItem(spot);
+            }
+            return true;
+        }
+        return false;
+    }
+
+    private isNearby(obstacle: Rectangle) {
+        const center = obstacle.max.add(obstacle.min).divide(2);
+        const direction = center.subtract(this.playerPosition);
+        const length = direction.length;
+        const unit = direction.divide(length);
+        return obstacle.contains(this.playerPosition.add(unit));
     }
 
     private updateParallax() {

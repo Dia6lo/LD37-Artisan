@@ -15,6 +15,9 @@ class AssetBundle {
     static readonly rightHand = AssetBundle.createPath("RightHand.png");
     static readonly gui = AssetBundle.createPath("Gui.png");
     static readonly marker = AssetBundle.createPath("Marker.png");
+    static readonly watchTv = AssetBundle.createPath("WatchTV.png");
+    static readonly sleep = AssetBundle.createPath("Sleep.png");
+    static readonly send = AssetBundle.createPath("Send.png");
     private readonly imageUrls = [
         AssetBundle.apple,
         AssetBundle.room,
@@ -25,7 +28,10 @@ class AssetBundle {
         AssetBundle.rightHand,
         AssetBundle.leftHand,
         AssetBundle.gui,
-        AssetBundle.marker
+        AssetBundle.marker,
+        AssetBundle.watchTv,
+        AssetBundle.sleep,
+        AssetBundle.send
     ];
 
     private static createPath(file: string) {

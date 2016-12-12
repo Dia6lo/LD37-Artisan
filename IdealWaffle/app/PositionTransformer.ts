@@ -1,21 +1,24 @@
 ﻿class PositionTransformer {
     cartesianBounds = new Vector2(100, 100);
 
+    tv = new Rectangle(0, 34, 14, 60);
+    bed = new Rectangle(0, 56, 18, 102);
+    post = new Rectangle(68, 0, 97, 15.5);
     obstacles = [
         // Table (left side)
         new Rectangle(0, 0, 20, 38),
         // Table (right side)
         new Rectangle(0, 0, 40, 20),
         // Drawer
-        new Rectangle(0, 34, 14, 60),
+        this.tv,
         // Bed
-        new Rectangle(0, 56, 18, 102),
+        this.bed,
         // Box
         new Rectangle(16, 86, 28, 102),
         // Bookshelve
         new Rectangle(38, 0, 70, 10.01),
         // Poststand
-        new Rectangle(68, 0, 97, 15.5),
+        this.post,
         // Poststand cables
         new Rectangle(95, 0, 102, 7)
     ];

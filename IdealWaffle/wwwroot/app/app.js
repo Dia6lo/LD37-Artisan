@@ -11,7 +11,10 @@ class AssetBundle {
             AssetBundle.rightHand,
             AssetBundle.leftHand,
             AssetBundle.gui,
-            AssetBundle.marker
+            AssetBundle.marker,
+            AssetBundle.watchTv,
+            AssetBundle.sleep,
+            AssetBundle.send
         ];
     }
     get loaded() {
@@ -47,6 +50,9 @@ AssetBundle.leftHand = AssetBundle.createPath("LeftHand.png");
 AssetBundle.rightHand = AssetBundle.createPath("RightHand.png");
 AssetBundle.gui = AssetBundle.createPath("Gui.png");
 AssetBundle.marker = AssetBundle.createPath("Marker.png");
+AssetBundle.watchTv = AssetBundle.createPath("WatchTV.png");
+AssetBundle.sleep = AssetBundle.createPath("Sleep.png");
+AssetBundle.send = AssetBundle.createPath("Send.png");
 class CityParallax extends Widget {
     constructor() {
         super();
@@ -59,6 +65,75 @@ class CityParallax extends Widget {
     render(renderer) {
         const clipStart = this.offset.multiply(this.parallaxSize);
         renderer.renderTexture(this.texture, 0, 0, this.clipSize.x * 2, this.clipSize.y * 2, this.clipStartOffset.x + clipStart.x, this.clipStartOffset.y + clipStart.y, this.clipSize.x, this.clipSize.y);
+    }
+}
+class DisplayableObject extends Widget {
+    constructor() {
+        super(...arguments);
+        this.onpickup = () => { };
+        this.onput = () => { };
+        this.oninteract = () => { };
+        this.pickable = true;
+    }
+}
+class SpecialSpot extends DisplayableObject {
+    constructor(texture, tooltip) {
+        super();
+        this.pickable = false;
+        const sprite = new Sprite(texture);
+        sprite.size.set(32, 32);
+        sprite.pivot = Vector2.half;
+        this.displayView = new PanelObjectView(sprite, tooltip);
+    }
+}
+class SimpleItem extends DisplayableObject {
+    constructor(texture, size, name) {
+        super();
+        this.image = new Sprite();
+        this.cartesianPosition = new Vector2(50, 50);
+        this.image.texture = texture;
+        this.image.pivot = new Vector2(0.5, 1);
+        this.image.size = size;
+        this.addChild(this.image);
+        this.name = name;
+        this.displayView = new HandItemView(this);
+    }
+    createSprite() {
+        const sprite = new Sprite(this.image.texture);
+        sprite.size = this.image.size.clone();
+        return sprite;
+    }
+}
+class CompoundItem extends DisplayableObject {
+    constructor(parts) {
+        super();
+        this.parts = parts;
+        this.cartesianPosition = new Vector2(50, 50);
+        this.name = "";
+        for (let item of parts) {
+            this.name += `${item.name}-`;
+        }
+        this.name = this.name.substr(0, this.name.length - 1);
+        const sprite = this.createSprite();
+        sprite.pivot = Vector2.half;
+        this.addChild(sprite);
+        this.displayView = new HandItemView(this);
+    }
+    createSprite() {
+        const compound = new Widget();
+        let width = 0;
+        let height = 0;
+        for (let item of this.parts) {
+            const sprite = item.createSprite();
+            sprite.x = width === 0 ? width : width - 5;
+            compound.addChild(sprite);
+            width += sprite.width - 5;
+            if (sprite.height > height) {
+                height = sprite.height;
+            }
+        }
+        compound.size.set(width, height);
+        return compound;
     }
 }
 class Game extends Application {
@@ -109,17 +184,21 @@ class GuiFrame extends NineGrid {
         this.bottom = 4;
     }
 }
-class HandItemView extends Widget {
-    constructor(item) {
+class PanelObjectView extends Widget {
+    constructor(sprite, text) {
         super();
         this.pivot = Vector2.half;
-        const sprite = item.createSprite();
         sprite.pivot = Vector2.half;
         sprite.position = this.size.divide(2).add(new Vector2(0, 5));
         this.addChild(sprite);
-        const tooltip = new ItemTooltip(item);
+        const tooltip = new Tooltip(text);
         tooltip.position = this.size.divide(2).subtract(new Vector2(0, sprite.height));
         this.addChild(tooltip);
+    }
+}
+class HandItemView extends PanelObjectView {
+    constructor(item) {
+        super(item.createSprite(), item.name);
     }
 }
 class ItemFactory {
@@ -236,13 +315,16 @@ class ItemHandPanel extends Widget {
                 }
                 if (hand.x === destination) {
                     if (destination === end) {
-                        if (!hand.item) {
+                        if (this.shownItem && !this.shownItem.pickable) {
+                            this.shownItem.oninteract(hand.item);
+                        }
+                        else if (!hand.item) {
                             if (hand.x === otherHand.x && otherHand.item && otherHand.item instanceof CompoundItem) {
                                 const item = otherHand.item;
                                 this.leftHand.holdItem(item.parts[0]);
                                 this.rightHand.holdItem(item.parts[1]);
                             }
-                            else if (this.shownItem) {
+                            else if (this.shownItem && this.shownItem.pickable) {
                                 const item = this.shownItem;
                                 hand.holdItem(item);
                                 this.showItem(undefined);
@@ -262,36 +344,6 @@ class ItemHandPanel extends Widget {
             }
             yield Wait.frame();
         }
-    }
-}
-class ItemTooltip extends GuiFrame {
-    constructor(item) {
-        super();
-        this.nameLabel = new Label();
-        this.nameLabel.text = item.name;
-        this.nameLabel.pivot = Vector2.half;
-        this.nameLabel.fontColor = Color.fromComponents(41, 196, 191);
-        this.nameLabel.horizontalTextAlignment = TextAlignment.Center;
-        this.nameLabel.verticalTextAlignment = TextAlignment.Center;
-        this.pivot = Vector2.half;
-        this.addChild(this.nameLabel);
-    }
-    beforeRender(renderer) {
-        super.beforeRender(renderer);
-        renderer.save();
-        const fontSize = 32;
-        game.setPixelFont(fontSize);
-        const measure = new Vector2(renderer.measureText(this.nameLabel.text), fontSize);
-        this.size = measure.add(new Vector2(15, 0));
-        this.nameLabel.position = this.size.divide(2).subtract(new Vector2(0, 10));
-        renderer.restore();
-    }
-    render(renderer) {
-        renderer.save();
-        const fontSize = 32;
-        game.setPixelFont(fontSize);
-        super.render(renderer);
-        renderer.restore();
     }
 }
 class LoadingScreen extends Widget {
@@ -419,14 +471,17 @@ class Player extends Widget {
 class PositionTransformer {
     constructor() {
         this.cartesianBounds = new Vector2(100, 100);
+        this.tv = new Rectangle(0, 34, 14, 60);
+        this.bed = new Rectangle(0, 56, 18, 102);
+        this.post = new Rectangle(68, 0, 97, 15.5);
         this.obstacles = [
             new Rectangle(0, 0, 20, 38),
             new Rectangle(0, 0, 40, 20),
-            new Rectangle(0, 34, 14, 60),
-            new Rectangle(0, 56, 18, 102),
+            this.tv,
+            this.bed,
             new Rectangle(16, 86, 28, 102),
             new Rectangle(38, 0, 70, 10.01),
-            new Rectangle(68, 0, 97, 15.5),
+            this.post,
             new Rectangle(95, 0, 102, 7)
         ];
         this.isometricTop = new Vector2(432, 204);
@@ -545,8 +600,11 @@ class Room extends Widget {
         this.items = [];
         this.roomObjects = new Widget();
         this.tvMarker = new Marker();
+        this.tvSpot = new SpecialSpot(Texture.fromImage(AssetBundle.watchTv), "Read last messages");
         this.bedMarker = new Marker();
+        this.bedSpot = new SpecialSpot(Texture.fromImage(AssetBundle.sleep), "Go to bed");
         this.postMarker = new Marker();
+        this.postSpot = new SpecialSpot(Texture.fromImage(AssetBundle.send), "Send requested item");
         this.itemHandPanel = new ItemHandPanel(this);
         this.cityParallax.position = new Vector2(304, 76);
         this.addChild(this.cityParallax);
@@ -568,15 +626,14 @@ class Room extends Widget {
             this.mousePosition = new Vector2(ev.x - game.renderer.view.offsetLeft, ev.y - game.renderer.view.offsetTop);
         };
         this.debug.fontColor = Color.white;
-        const apple = this.createItem(0);
-        const apple1 = this.createItem(0);
-        const apple2 = this.createItem(0);
-        this.addItem(apple);
-        this.addItem(apple1);
-        this.addItem(apple2);
         this.setupMarker(this.tvMarker, 268, 145);
+        this.tvSpot.oninteract = item => this.onTvSpotInteract(item);
         this.setupMarker(this.bedMarker, 165, 305);
         this.setupMarker(this.postMarker, 725, 320);
+    }
+    onTvSpotInteract(item) {
+        const apple = this.createItem(0);
+        this.addItem(apple);
     }
     setupMarker(marker, x, y) {
         marker.start = new Vector2(x, y);
@@ -585,7 +642,7 @@ class Room extends Widget {
     update(delta) {
         game.setPixelFont(32);
         this.updateCharacterPosition();
-        this.updateItemHighlights();
+        this.updateItemPanel();
         this.updateParallax();
         this.sortRoomObjects();
         super.update(delta);
@@ -645,7 +702,7 @@ class Room extends Widget {
                 .toStringV2(this.transformer.toCartesian(this.mousePosition))}`;
         }
     }
-    updateItemHighlights() {
+    updateItemPanel() {
         for (let item of this.items) {
             item.position = this.transformer.toIsometric(item.cartesianPosition);
             const closeEnough = this.playerPosition.subtract(item.cartesianPosition).length <= 7;
@@ -656,7 +713,28 @@ class Room extends Widget {
                 return;
             }
         }
+        if (this.setSpecialSpotIfPossible(this.transformer.tv, this.tvSpot) ||
+            this.setSpecialSpotIfPossible(this.transformer.bed, this.bedSpot) ||
+            this.setSpecialSpotIfPossible(this.transformer.post, this.postSpot)) {
+            return;
+        }
         this.itemHandPanel.showItem(undefined);
+    }
+    setSpecialSpotIfPossible(bounds, spot) {
+        if (this.isNearby(bounds)) {
+            if (this.itemHandPanel.shownItem !== spot) {
+                this.itemHandPanel.showItem(spot);
+            }
+            return true;
+        }
+        return false;
+    }
+    isNearby(obstacle) {
+        const center = obstacle.max.add(obstacle.min).divide(2);
+        const direction = center.subtract(this.playerPosition);
+        const length = direction.length;
+        const unit = direction.divide(length);
+        return obstacle.contains(this.playerPosition.add(unit));
     }
     updateParallax() {
         const leftX = this.transformer.isometricLeft.x;
@@ -711,65 +789,6 @@ class Room extends Widget {
         return `${vector.x} ${vector.y}`;
     }
 }
-class DisplayableObject extends Widget {
-    constructor() {
-        super(...arguments);
-        this.onpickup = () => { };
-        this.onput = () => { };
-        this.oninteract = () => { };
-        this.pickable = true;
-    }
-}
-class SimpleItem extends DisplayableObject {
-    constructor(texture, size, name) {
-        super();
-        this.image = new Sprite();
-        this.cartesianPosition = new Vector2(50, 50);
-        this.image.texture = texture;
-        this.image.pivot = new Vector2(0.5, 1);
-        this.image.size = size;
-        this.addChild(this.image);
-        this.name = name;
-        this.displayView = new HandItemView(this);
-    }
-    createSprite() {
-        const sprite = new Sprite(this.image.texture);
-        sprite.size = this.image.size.clone();
-        return sprite;
-    }
-}
-class CompoundItem extends DisplayableObject {
-    constructor(parts) {
-        super();
-        this.parts = parts;
-        this.cartesianPosition = new Vector2(50, 50);
-        this.name = "";
-        for (let item of parts) {
-            this.name += `${item.name}-`;
-        }
-        this.name = this.name.substr(0, this.name.length - 1);
-        const sprite = this.createSprite();
-        sprite.pivot = Vector2.half;
-        this.addChild(sprite);
-        this.displayView = new HandItemView(this);
-    }
-    createSprite() {
-        const compound = new Widget();
-        let width = 0;
-        let height = 0;
-        for (let item of this.parts) {
-            const sprite = item.createSprite();
-            sprite.x = width === 0 ? width : width - 5;
-            compound.addChild(sprite);
-            width += sprite.width - 5;
-            if (sprite.height > height) {
-                height = sprite.height;
-            }
-        }
-        compound.size.set(width, height);
-        return compound;
-    }
-}
 class Spritesheet extends Widget {
     constructor(texture) {
         super();
@@ -786,4 +805,34 @@ class Spritesheet extends Widget {
     }
 }
 Spritesheet.spriteIdAnimator = () => new NumberAnimator("spriteId");
+class Tooltip extends GuiFrame {
+    constructor(text) {
+        super();
+        this.nameLabel = new Label();
+        this.nameLabel.text = text;
+        this.nameLabel.pivot = Vector2.half;
+        this.nameLabel.fontColor = Color.fromComponents(41, 196, 191);
+        this.nameLabel.horizontalTextAlignment = TextAlignment.Center;
+        this.nameLabel.verticalTextAlignment = TextAlignment.Center;
+        this.pivot = Vector2.half;
+        this.addChild(this.nameLabel);
+    }
+    beforeRender(renderer) {
+        super.beforeRender(renderer);
+        renderer.save();
+        const fontSize = 32;
+        game.setPixelFont(fontSize);
+        const measure = new Vector2(renderer.measureText(this.nameLabel.text), fontSize);
+        this.size = measure.add(new Vector2(15, 0));
+        this.nameLabel.position = this.size.divide(2).subtract(new Vector2(0, 10));
+        renderer.restore();
+    }
+    render(renderer) {
+        renderer.save();
+        const fontSize = 32;
+        game.setPixelFont(fontSize);
+        super.render(renderer);
+        renderer.restore();
+    }
+}
 //# sourceMappingURL=app.js.map

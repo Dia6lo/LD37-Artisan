@@ -1,9 +1,9 @@
-class ItemTooltip extends GuiFrame {
+class Tooltip extends GuiFrame {
     private readonly nameLabel = new Label();
 
-    constructor(item: Item) {
+    constructor(text: string) {
         super();
-        this.nameLabel.text = item.name;
+        this.nameLabel.text = text;
         this.nameLabel.pivot = Vector2.half;
         this.nameLabel.fontColor = Color.fromComponents(41, 196, 191);
         this.nameLabel.horizontalTextAlignment = TextAlignment.Center;

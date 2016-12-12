@@ -58,14 +58,17 @@ class ItemHandPanel extends Widget {
                 }
                 if (hand.x === destination) {
                     if (destination === end) {
-                        if (!hand.item) {
+                        if (this.shownItem && !this.shownItem.pickable) {
+                            this.shownItem.oninteract(hand.item);
+                        }
+                        else if (!hand.item) {
                             if (hand.x === otherHand.x && otherHand.item && otherHand.item instanceof CompoundItem) {
                                 const item = otherHand.item;
                                 this.leftHand.holdItem(item.parts[0]);
                                 this.rightHand.holdItem(item.parts[1]);
                             }
-                            else if (this.shownItem) {
-                                const item = this.shownItem as SimpleItem;
+                            else if (this.shownItem && this.shownItem.pickable) {
+                                const item = this.shownItem as Item;
                                 hand.holdItem(item);
                                 this.showItem(undefined);
                                 item.onpickup();
