@@ -9,6 +9,7 @@ class Room extends Widget {
     private itemLayer = new Widget();
     private cityParallax = new CityParallax();
     private itemHandPanel = new ItemHandPanel();
+    private items: Item[] = [];
 
     constructor() {
         super();
@@ -34,12 +35,19 @@ class Room extends Widget {
         };
         this.debug.fontColor = Color.white;
         //this.addChild(this.debug);
+        //const newsLabel = new Label("tention: You must stay in your houses *** Want to enlarge your self-esteem?");
+        //newsLabel.fontColor = Color.fromComponents(41, 196, 191);
+        //newsLabel.position.set(-10, 505);
+        //this.addChild(newsLabel);
         const apple = this.createItem(ItemType.Apple);
-        this.itemHandPanel.showItem(apple);
-        //this.itemLayer.addChild(apple);
+
+        //this.itemHandPanel.showItem(apple);
+        this.itemLayer.addChild(apple);
+        this.items.push(apple);
     }
 
     update(delta: number): void {
+        game.setPixelFont(32);
         this.updateCharacterPosition();
         this.updateItemHighlights();
         this.updateParallax();
@@ -98,10 +106,18 @@ class Room extends Widget {
     }
 
     private updateItemHighlights() {
-        for (let child of this.itemLayer.children) {
-            const item = child as Item;
-            //item.highlighted = this.playerPosition.subtract(item.cartesianPosition).length <= 5;
+        for (let item of this.items) {
+            if (item.isBeingHeld) continue;
+            item.position = this.transformer.toIsometric(item.cartesianPosition);
+            const closeEnough = this.playerPosition.subtract(item.cartesianPosition).length <= 5;
+            if (closeEnough) {
+                if (this.itemHandPanel.shownItem !== item) {
+                    this.itemHandPanel.showItem(item);
+                }
+                return;
+            }
         }
+        this.itemHandPanel.showItem(undefined);
     }
 
     private updateParallax() {
@@ -130,9 +146,18 @@ class Room extends Widget {
     }
 
     createItem(type: ItemType): Item {
+        const item = this.getItemObject(type);
+        item.onrelease = () => {
+            item.cartesianPosition = this.playerPosition;
+            item.position = this.transformer.toIsometric(item.cartesianPosition);
+        };
+        return item;
+    }
+
+    private getItemObject(type: ItemType) {
         switch (type) {
             case ItemType.Apple:
-                return new Item(new Vector2(25, 25), this.transformer, Texture.fromImage(AssetBundle.apple), "Apple");
+                return new Item(new Vector2(50, 50), Texture.fromImage(AssetBundle.apple), "Apple");
             default:
                 throw "Error creating item";
         }
@@ -148,19 +173,18 @@ const enum ItemType {
 }
 
 class Item extends Sprite {
-    private tooltip = new Label();
     readonly name: string;
+    isBeingHeld = false;
+    itemView: HandItemView;
+    onrelease: () => void;
 
-    constructor(public cartesianPosition: Vector2, private readonly transformer: PositionTransformer, texture: Texture, name: string) {
+    constructor(public cartesianPosition: Vector2, texture: Texture, name: string) {
         super();
         this.texture = texture;
         this.pivot = new Vector2(0.5, 1);
         this.size = new Vector2(32, 32);
         this.name = name;
-        this.tooltip.text = name;
-        this.tooltip.pivot = new Vector2(0.5, 1);
-        this.tooltip.horizontalTextAlignment = TextAlignment.Center;
-        this.tooltip.verticalTextAlignment = TextAlignment.Center;
+        this.itemView = new HandItemView(this);
     }
 
     createSprite() {

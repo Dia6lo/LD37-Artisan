@@ -1,5 +1,6 @@
 class ItemHand extends Widget {
     private contentHolder = new WidgetHolder();
+    item: Item | undefined = undefined;
 
     constructor(flipped: boolean, hint: string) {
         super();
@@ -17,5 +18,13 @@ class ItemHand extends Widget {
         game.setPixelFont(24);
         super.render(renderer);
         renderer.restore();
+    }
+
+    holdItem(item: Item | undefined) {
+        this.item = item;
+        this.contentHolder.clear();
+        if (item) {
+            this.contentHolder.content = item.itemView;
+        }
     }
 }

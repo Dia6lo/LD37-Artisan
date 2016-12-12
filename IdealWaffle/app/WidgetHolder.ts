@@ -4,10 +4,14 @@ class WidgetHolder extends Widget {
     }
 
     set content(widget: Widget) {
+        this.clear();
+        this.addChild(widget);
+    }
+
+    clear() {
         const children = this.children.slice();
         for (let child of children) {
             this.removeChild(child);
         }
-        this.addChild(widget);
     }
 }
