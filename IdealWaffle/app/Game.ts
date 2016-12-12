@@ -1,4 +1,5 @@
 ﻿class Game extends Application {
+    static readonly neon = Color.fromComponents(41, 196, 191);
     private state = GameState.Loading;
     readonly assets = new AssetBundle();
     private readonly loadingScreen: LoadingScreen;

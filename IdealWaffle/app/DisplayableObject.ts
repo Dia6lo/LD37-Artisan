@@ -14,7 +14,7 @@ class SpecialSpot extends DisplayableObject {
         const sprite = new Sprite(texture);
         sprite.size.set(32, 32);
         sprite.pivot = Vector2.half;
-        this.displayView = new PanelObjectView(sprite, tooltip);
+        this.displayView = new PanelObjectView(sprite, tooltip, false);
     }
 }
 

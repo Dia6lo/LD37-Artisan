@@ -3,7 +3,7 @@ class Room extends Widget {
     private player = new Player();
     private transformer = new PositionTransformer();
     private playerPosition = new Vector2(44, 65);
-    private characterSpeed = 0.30;
+    private characterSpeed = 1;
     private mousePosition: Vector2;
     private debug = new Label();
     private cityParallax = new CityParallax();
@@ -48,10 +48,30 @@ class Room extends Widget {
         this.setupMarker(this.tvMarker, 268, 145);
         this.tvSpot.oninteract = item => this.onTvSpotInteract(item);
         this.setupMarker(this.bedMarker, 165, 305);
+        this.bedMarker.disable();
+        this.bedSpot.oninteract = item => this.onBedSpotInteract(item);
         this.setupMarker(this.postMarker, 725, 320);
+        this.postMarker.disable();
+        this.postSpot.oninteract = item => this.onPostSpotInteract(item);
+        const messageBox = new MessageBox("Linver",
+            "Good day, Artis@n! I have a great plan and I need",
+            "a powerful weapon to accomplish it.",
+            "Craft it quickly and quietly and I will buy it.");
+            messageBox.position.set(50, 335);
+        this.addChild(messageBox);
     }
 
     private onTvSpotInteract(item?: Item) {
+        const apple = this.createItem(ItemType.Apple);
+        this.addItem(apple);
+    }
+
+    private onBedSpotInteract(item?: Item) {
+        const apple = this.createItem(ItemType.Apple);
+        this.addItem(apple);
+    }
+
+    private onPostSpotInteract(item?: Item) {
         const apple = this.createItem(ItemType.Apple);
         this.addItem(apple);
     }

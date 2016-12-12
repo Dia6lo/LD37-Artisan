@@ -5,7 +5,7 @@ class Tooltip extends GuiFrame {
         super();
         this.nameLabel.text = text;
         this.nameLabel.pivot = Vector2.half;
-        this.nameLabel.fontColor = Color.fromComponents(41, 196, 191);
+        this.nameLabel.fontColor = Game.neon;
         this.nameLabel.horizontalTextAlignment = TextAlignment.Center;
         this.nameLabel.verticalTextAlignment = TextAlignment.Center;
         this.pivot = Vector2.half;
@@ -27,6 +27,33 @@ class Tooltip extends GuiFrame {
         renderer.save();
         const fontSize = 32;
         game.setPixelFont(fontSize);
+        super.render(renderer);
+        renderer.restore();
+    }
+}
+
+class MessageBox extends GuiFrame {
+    private readonly fontSize = 32;
+
+    constructor(nickname: string, line1: string, line2: string, line3: string) {
+        super();
+        this.size = new Vector2(780, 170);
+        this.createLabel(line1, 0);
+        this.createLabel(line2, 1);
+        this.createLabel(line3, 2);
+    }
+
+    private createLabel(text: string, lineIndex: number) {
+        const label = new Label(text);
+        label.y = lineIndex * (this.fontSize + 5) + 20;
+        label.x = 35;
+        label.fontColor = Game.neon;
+        this.addChild(label);
+    }
+
+    render(renderer: Renderer): void {
+        renderer.save();
+        game.setPixelFont(this.fontSize);
         super.render(renderer);
         renderer.restore();
     }

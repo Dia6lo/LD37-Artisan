@@ -83,7 +83,7 @@ class SpecialSpot extends DisplayableObject {
         const sprite = new Sprite(texture);
         sprite.size.set(32, 32);
         sprite.pivot = Vector2.half;
-        this.displayView = new PanelObjectView(sprite, tooltip);
+        this.displayView = new PanelObjectView(sprite, tooltip, false);
     }
 }
 class SimpleItem extends DisplayableObject {
@@ -169,6 +169,7 @@ class Game extends Application {
         this.renderer.context.font = `${size}px tooltipFont`;
     }
 }
+Game.neon = Color.fromComponents(41, 196, 191);
 var game;
 window.onload = () => {
     game = new Game();
@@ -185,14 +186,14 @@ class GuiFrame extends NineGrid {
     }
 }
 class PanelObjectView extends Widget {
-    constructor(sprite, text) {
+    constructor(sprite, text, textAbove = true) {
         super();
         this.pivot = Vector2.half;
         sprite.pivot = Vector2.half;
         sprite.position = this.size.divide(2).add(new Vector2(0, 5));
         this.addChild(sprite);
         const tooltip = new Tooltip(text);
-        tooltip.position = this.size.divide(2).subtract(new Vector2(0, sprite.height));
+        tooltip.position = this.size.divide(2).add(new Vector2(0, textAbove ? -sprite.height : sprite.height * 1.25));
         this.addChild(tooltip);
     }
 }
@@ -317,6 +318,7 @@ class ItemHandPanel extends Widget {
                     if (destination === end) {
                         if (this.shownItem && !this.shownItem.pickable) {
                             this.shownItem.oninteract(hand.item);
+                            hand.justPickedUp = true;
                         }
                         else if (!hand.item) {
                             if (hand.x === otherHand.x && otherHand.item && otherHand.item instanceof CompoundItem) {
@@ -587,6 +589,8 @@ class PositionTransformer {
         return new Vector2(x, y);
     }
 }
+class Quest {
+}
 class Room extends Widget {
     constructor() {
         super();
@@ -594,7 +598,7 @@ class Room extends Widget {
         this.player = new Player();
         this.transformer = new PositionTransformer();
         this.playerPosition = new Vector2(44, 65);
-        this.characterSpeed = 0.30;
+        this.characterSpeed = 1;
         this.debug = new Label();
         this.cityParallax = new CityParallax();
         this.items = [];
@@ -629,9 +633,24 @@ class Room extends Widget {
         this.setupMarker(this.tvMarker, 268, 145);
         this.tvSpot.oninteract = item => this.onTvSpotInteract(item);
         this.setupMarker(this.bedMarker, 165, 305);
+        this.bedMarker.disable();
+        this.bedSpot.oninteract = item => this.onBedSpotInteract(item);
         this.setupMarker(this.postMarker, 725, 320);
+        this.postMarker.disable();
+        this.postSpot.oninteract = item => this.onPostSpotInteract(item);
+        const messageBox = new MessageBox("Linver", "Good day, Artis@n! I have a great plan and I need", "a powerful weapon to accomplish it.", "Craft it quickly and quietly and I will buy it.");
+        messageBox.position.set(50, 335);
+        this.addChild(messageBox);
     }
     onTvSpotInteract(item) {
+        const apple = this.createItem(0);
+        this.addItem(apple);
+    }
+    onBedSpotInteract(item) {
+        const apple = this.createItem(0);
+        this.addItem(apple);
+    }
+    onPostSpotInteract(item) {
         const apple = this.createItem(0);
         this.addItem(apple);
     }
@@ -811,7 +830,7 @@ class Tooltip extends GuiFrame {
         this.nameLabel = new Label();
         this.nameLabel.text = text;
         this.nameLabel.pivot = Vector2.half;
-        this.nameLabel.fontColor = Color.fromComponents(41, 196, 191);
+        this.nameLabel.fontColor = Game.neon;
         this.nameLabel.horizontalTextAlignment = TextAlignment.Center;
         this.nameLabel.verticalTextAlignment = TextAlignment.Center;
         this.pivot = Vector2.half;
@@ -831,6 +850,29 @@ class Tooltip extends GuiFrame {
         renderer.save();
         const fontSize = 32;
         game.setPixelFont(fontSize);
+        super.render(renderer);
+        renderer.restore();
+    }
+}
+class MessageBox extends GuiFrame {
+    constructor(nickname, line1, line2, line3) {
+        super();
+        this.fontSize = 32;
+        this.size = new Vector2(780, 170);
+        this.createLabel(line1, 0);
+        this.createLabel(line2, 1);
+        this.createLabel(line3, 2);
+    }
+    createLabel(text, lineIndex) {
+        const label = new Label(text);
+        label.y = lineIndex * (this.fontSize + 5) + 20;
+        label.x = 35;
+        label.fontColor = Game.neon;
+        this.addChild(label);
+    }
+    render(renderer) {
+        renderer.save();
+        game.setPixelFont(this.fontSize);
         super.render(renderer);
         renderer.restore();
     }
