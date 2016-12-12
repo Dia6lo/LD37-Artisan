@@ -6,17 +6,16 @@ class Room extends Widget {
     private characterSpeed = 0.30;
     private mousePosition: Vector2;
     private debug = new Label();
-    private itemLayer = new Widget();
     private cityParallax = new CityParallax();
     private itemHandPanel = new ItemHandPanel();
     private items: Item[] = [];
+    private roomObjects = new Widget();
 
     constructor() {
         super();
         this.cityParallax.position = new Vector2(304, 76);
         this.addChild(this.cityParallax);
         this.room.size = new Vector2(886, 554);
-        this.player.size = new Vector2(40, 130);
         this.player.pivot = new Vector2(0.5, 1);
         this.addChild(this.room);
         const light = Sprite.fromImage(AssetBundle.light);
@@ -25,8 +24,8 @@ class Room extends Widget {
         light.position = new Vector2(446, 132);
         light.opacity = 0.6;
         this.tasks.add(this.updateLightTask(light));
-        this.addChild(this.itemLayer);
-        this.addChild(this.player);
+        this.addChild(this.roomObjects);
+        this.roomObjects.addChild(this.player);
         this.addChild(light);
         this.itemHandPanel.position.set(485, 120);
         this.addChild(this.itemHandPanel);
@@ -42,7 +41,7 @@ class Room extends Widget {
         const apple = this.createItem(ItemType.Apple);
 
         //this.itemHandPanel.showItem(apple);
-        this.itemLayer.addChild(apple);
+        this.roomObjects.addChild(apple);
         this.items.push(apple);
     }
 
@@ -51,7 +50,19 @@ class Room extends Widget {
         this.updateCharacterPosition();
         this.updateItemHighlights();
         this.updateParallax();
+        this.sortRoomObjects();
         super.update(delta);
+    }
+
+    private sortRoomObjects() {
+        const objects = this.roomObjects.children.slice();
+        for (let child of objects) {
+            this.roomObjects.removeChild(child);
+        }
+        objects.sort((a, b) => a.y < b.y ? -1 : a.y > b.y ? 1 : 0);
+        for (let child of objects) {
+            this.roomObjects.addChild(child);
+        }
     }
 
     private *updateLightTask(light: Sprite) {

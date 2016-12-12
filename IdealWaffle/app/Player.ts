@@ -10,6 +10,7 @@ class Player extends Widget {
 
     constructor() {
         super();
+        this.size = this.widgetSize;
         this.setupAnimation(this.idleSpriteSheet, 4, 15);
         this.setupAnimation(this.walkSpriteSheet, 8, 12);
         this.runIdleAnimation();

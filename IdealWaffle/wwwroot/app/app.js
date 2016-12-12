@@ -326,6 +326,7 @@ class Player extends Widget {
         this.spriteSize = new Vector2(20, 59);
         this.spriteHolder = new WidgetHolder();
         this.animationName = "Animation";
+        this.size = this.widgetSize;
         this.setupAnimation(this.idleSpriteSheet, 4, 15);
         this.setupAnimation(this.walkSpriteSheet, 8, 12);
         this.runIdleAnimation();
@@ -485,14 +486,13 @@ class Room extends Widget {
         this.playerPosition = new Vector2(50, 50);
         this.characterSpeed = 0.30;
         this.debug = new Label();
-        this.itemLayer = new Widget();
         this.cityParallax = new CityParallax();
         this.itemHandPanel = new ItemHandPanel();
         this.items = [];
+        this.roomObjects = new Widget();
         this.cityParallax.position = new Vector2(304, 76);
         this.addChild(this.cityParallax);
         this.room.size = new Vector2(886, 554);
-        this.player.size = new Vector2(40, 130);
         this.player.pivot = new Vector2(0.5, 1);
         this.addChild(this.room);
         const light = Sprite.fromImage(AssetBundle.light);
@@ -501,8 +501,8 @@ class Room extends Widget {
         light.position = new Vector2(446, 132);
         light.opacity = 0.6;
         this.tasks.add(this.updateLightTask(light));
-        this.addChild(this.itemLayer);
-        this.addChild(this.player);
+        this.addChild(this.roomObjects);
+        this.roomObjects.addChild(this.player);
         this.addChild(light);
         this.itemHandPanel.position.set(485, 120);
         this.addChild(this.itemHandPanel);
@@ -511,7 +511,7 @@ class Room extends Widget {
         };
         this.debug.fontColor = Color.white;
         const apple = this.createItem(0);
-        this.itemLayer.addChild(apple);
+        this.roomObjects.addChild(apple);
         this.items.push(apple);
     }
     update(delta) {
@@ -519,7 +519,18 @@ class Room extends Widget {
         this.updateCharacterPosition();
         this.updateItemHighlights();
         this.updateParallax();
+        this.sortRoomObjects();
         super.update(delta);
+    }
+    sortRoomObjects() {
+        const objects = this.roomObjects.children.slice();
+        for (let child of objects) {
+            this.roomObjects.removeChild(child);
+        }
+        objects.sort((a, b) => a.y < b.y ? -1 : a.y > b.y ? 1 : 0);
+        for (let child of objects) {
+            this.roomObjects.addChild(child);
+        }
     }
     *updateLightTask(light) {
         while (true) {
