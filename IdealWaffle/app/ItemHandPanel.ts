@@ -43,7 +43,7 @@ class ItemHandPanel extends Widget {
                 if (hand.x === end && hand.item !== undefined && !justPickedUp) {
                     const item = hand.item;
                     this.showItem(item);
-                    item.isBeingHeld = false;
+                    item.isActive = true;
                     item.opacity = 1;
                     hand.holdItem(undefined);
                     item.onrelease();
@@ -61,7 +61,7 @@ class ItemHandPanel extends Widget {
                 if (hand.x === destination && destination === end && this.shownItem !== undefined) {
                     const item = this.shownItem;
                     hand.holdItem(item);
-                    item.isBeingHeld = true;
+                    item.isActive = false;
                     item.opacity = 0;
                     this.showItem(undefined);
                     justPickedUp = true;

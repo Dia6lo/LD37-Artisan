@@ -124,7 +124,7 @@ class Item extends Sprite {
     constructor(cartesianPosition, texture, name) {
         super();
         this.cartesianPosition = cartesianPosition;
-        this.isBeingHeld = false;
+        this.isActive = true;
         this.texture = texture;
         this.pivot = new Vector2(0.5, 1);
         this.size = new Vector2(32, 32);
@@ -135,6 +135,11 @@ class Item extends Sprite {
         const sprite = new Sprite(this.texture);
         sprite.size.set(32, 32);
         return sprite;
+    }
+}
+class CompoundItem extends Item {
+    constructor() {
+        super();
     }
 }
 class ItemHand extends Widget {
@@ -206,7 +211,7 @@ class ItemHandPanel extends Widget {
                 if (hand.x === end && hand.item !== undefined && !justPickedUp) {
                     const item = hand.item;
                     this.showItem(item);
-                    item.isBeingHeld = false;
+                    item.isActive = true;
                     item.opacity = 1;
                     hand.holdItem(undefined);
                     item.onrelease();
@@ -224,7 +229,7 @@ class ItemHandPanel extends Widget {
                 if (hand.x === destination && destination === end && this.shownItem !== undefined) {
                     const item = this.shownItem;
                     hand.holdItem(item);
-                    item.isBeingHeld = true;
+                    item.isActive = false;
                     item.opacity = 0;
                     this.showItem(undefined);
                     justPickedUp = true;
@@ -317,8 +322,8 @@ class Player extends Widget {
         super();
         this.idleSpriteSheet = Spritesheet.fromImage(AssetBundle.playerIdleSheet);
         this.walkSpriteSheet = Spritesheet.fromImage(AssetBundle.playerWalkSheet);
-        this.widgetSize = new Vector2(40, 130);
-        this.spriteSize = new Vector2(20, 65);
+        this.widgetSize = new Vector2(40, 118);
+        this.spriteSize = new Vector2(20, 59);
         this.spriteHolder = new WidgetHolder();
         this.animationName = "Animation";
         this.setupAnimation(this.idleSpriteSheet, 4, 15);
@@ -493,7 +498,7 @@ class Room extends Widget {
         const light = Sprite.fromImage(AssetBundle.light);
         light.size = new Vector2(440, 440);
         light.pivot = Vector2.half;
-        light.position = new Vector2(436, 128);
+        light.position = new Vector2(446, 132);
         light.opacity = 0.6;
         this.tasks.add(this.updateLightTask(light));
         this.addChild(this.itemLayer);
@@ -567,10 +572,10 @@ class Room extends Widget {
     }
     updateItemHighlights() {
         for (let item of this.items) {
-            if (item.isBeingHeld)
+            if (!item.isActive)
                 continue;
             item.position = this.transformer.toIsometric(item.cartesianPosition);
-            const closeEnough = this.playerPosition.subtract(item.cartesianPosition).length <= 5;
+            const closeEnough = this.playerPosition.subtract(item.cartesianPosition).length <= 7;
             if (closeEnough) {
                 if (this.itemHandPanel.shownItem !== item) {
                     this.itemHandPanel.showItem(item);

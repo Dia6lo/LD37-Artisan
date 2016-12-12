@@ -1,6 +1,6 @@
 class Item extends Sprite {
     readonly name: string;
-    isBeingHeld = false;
+    isActive = true;
     itemView: HandItemView;
     onrelease: () => void;
 
@@ -17,5 +17,13 @@ class Item extends Sprite {
         const sprite = new Sprite(this.texture);
         sprite.size.set(32, 32);
         return sprite;
+    }
+}
+
+class CompoundItem extends Item {
+    parts: Item[];
+
+    constructor() {
+        super();
     }
 }

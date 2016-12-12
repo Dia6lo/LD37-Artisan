@@ -2,8 +2,8 @@
 class Player extends Widget {
     private idleSpriteSheet = Spritesheet.fromImage(AssetBundle.playerIdleSheet);
     private walkSpriteSheet = Spritesheet.fromImage(AssetBundle.playerWalkSheet);
-    private readonly widgetSize = new Vector2(40, 130);
-    private readonly spriteSize = new Vector2(20, 65);
+    private readonly widgetSize = new Vector2(40, 118);
+    private readonly spriteSize = new Vector2(20, 59);
     private idle;
     private spriteHolder = new WidgetHolder();
     private readonly animationName = "Animation";

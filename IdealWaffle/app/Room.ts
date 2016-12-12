@@ -22,7 +22,7 @@ class Room extends Widget {
         const light = Sprite.fromImage(AssetBundle.light);
         light.size = new Vector2(440, 440);
         light.pivot = Vector2.half;
-        light.position = new Vector2(436, 128);
+        light.position = new Vector2(446, 132);
         light.opacity = 0.6;
         this.tasks.add(this.updateLightTask(light));
         this.addChild(this.itemLayer);
@@ -107,9 +107,9 @@ class Room extends Widget {
 
     private updateItemHighlights() {
         for (let item of this.items) {
-            if (item.isBeingHeld) continue;
+            if (!item.isActive) continue;
             item.position = this.transformer.toIsometric(item.cartesianPosition);
-            const closeEnough = this.playerPosition.subtract(item.cartesianPosition).length <= 5;
+            const closeEnough = this.playerPosition.subtract(item.cartesianPosition).length <= 7;
             if (closeEnough) {
                 if (this.itemHandPanel.shownItem !== item) {
                     this.itemHandPanel.showItem(item);
