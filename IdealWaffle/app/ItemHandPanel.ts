@@ -77,7 +77,7 @@ class ItemHandPanel extends Widget {
                         }
                         else {
                             if (hand.x === otherHand.x && otherHand.item) {
-                                const newItem = ItemFactory.mergeItems(this.rightHand.item!, this.leftHand.item!);
+                                const newItem = ItemFactory.mergeItems(this.leftHand.item!, this.rightHand.item!);
                                 this.room.setupItem(newItem);
                                 this.rightHand.holdItem(undefined);
                                 this.leftHand.holdItem(newItem);
