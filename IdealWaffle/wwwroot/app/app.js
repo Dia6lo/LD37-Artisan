@@ -98,8 +98,47 @@ window.onload = () => {
     document.body.appendChild(game.view);
     game.run();
 };
+class GuiFrame extends NineGrid {
+    constructor() {
+        super(Texture.fromImage(AssetBundle.gui));
+        this.left = 4;
+        this.right = 4;
+        this.top = 4;
+        this.bottom = 4;
+    }
+}
+class HandItemView extends Widget {
+    constructor(item) {
+        super();
+        this.pivot = Vector2.half;
+        const sprite = item.createSprite();
+        sprite.pivot = Vector2.half;
+        sprite.position = this.size.divide(2).add(new Vector2(0, 5));
+        this.addChild(sprite);
+        const tooltip = new ItemTooltip(item);
+        tooltip.position = this.size.divide(2).subtract(new Vector2(0, sprite.height));
+        this.addChild(tooltip);
+    }
+}
+class Item extends Sprite {
+    constructor(cartesianPosition, texture, name) {
+        super();
+        this.cartesianPosition = cartesianPosition;
+        this.isBeingHeld = false;
+        this.texture = texture;
+        this.pivot = new Vector2(0.5, 1);
+        this.size = new Vector2(32, 32);
+        this.name = name;
+        this.itemView = new HandItemView(this);
+    }
+    createSprite() {
+        const sprite = new Sprite(this.texture);
+        sprite.size.set(32, 32);
+        return sprite;
+    }
+}
 class ItemHand extends Widget {
-    constructor(flipped, hint) {
+    constructor(flipped) {
         super();
         this.contentHolder = new WidgetHolder();
         this.item = undefined;
@@ -128,8 +167,8 @@ class ItemHand extends Widget {
 class ItemHandPanel extends Widget {
     constructor() {
         super();
-        this.rightHand = new ItemHand(false, "x");
-        this.leftHand = new ItemHand(true, "z");
+        this.rightHand = new ItemHand(false);
+        this.leftHand = new ItemHand(true);
         this.itemHolder = new WidgetHolder();
         this.shownItem = undefined;
         this.size.set(440, 100);
@@ -157,12 +196,22 @@ class ItemHandPanel extends Widget {
         const start = hand.position.x;
         const end = this.itemHolder.position.x;
         const speed = 15;
+        let justPickedUp = false;
         let destination;
         while (true) {
             if (game.input.isKeyPressed(key)) {
                 destination = end;
             }
             else {
+                if (hand.x === end && hand.item !== undefined && !justPickedUp) {
+                    const item = hand.item;
+                    this.showItem(item);
+                    item.isBeingHeld = false;
+                    item.opacity = 1;
+                    hand.holdItem(undefined);
+                    item.onrelease();
+                }
+                justPickedUp = false;
                 destination = start;
             }
             if (hand.x !== destination) {
@@ -172,50 +221,17 @@ class ItemHandPanel extends Widget {
                 if ((direction < 0 && hand.x < destination) || (direction > 0 && hand.x > destination)) {
                     hand.x = destination;
                 }
-                if (hand.x === destination) {
-                    if (destination === end) {
-                        if (this.shownItem !== undefined) {
-                            const item = this.shownItem;
-                            hand.holdItem(item);
-                            item.isBeingHeld = true;
-                            item.opacity = 0;
-                            this.showItem(undefined);
-                        }
-                        else if (hand.item !== undefined) {
-                            const item = hand.item;
-                            this.showItem(item);
-                            item.isBeingHeld = false;
-                            item.opacity = 1;
-                            hand.holdItem(undefined);
-                            item.onrelease();
-                        }
-                    }
+                if (hand.x === destination && destination === end && this.shownItem !== undefined) {
+                    const item = this.shownItem;
+                    hand.holdItem(item);
+                    item.isBeingHeld = true;
+                    item.opacity = 0;
+                    this.showItem(undefined);
+                    justPickedUp = true;
                 }
             }
             yield Wait.frame();
         }
-    }
-}
-class HandItemView extends Widget {
-    constructor(item) {
-        super();
-        this.pivot = Vector2.half;
-        const sprite = item.createSprite();
-        sprite.pivot = Vector2.half;
-        sprite.position = this.size.divide(2).add(new Vector2(0, 5));
-        this.addChild(sprite);
-        const tooltip = new ItemTooltip(item);
-        tooltip.position = this.size.divide(2).subtract(new Vector2(0, sprite.height));
-        this.addChild(tooltip);
-    }
-}
-class GuiFrame extends NineGrid {
-    constructor() {
-        super(Texture.fromImage(AssetBundle.gui));
-        this.left = 4;
-        this.right = 4;
-        this.top = 4;
-        this.bottom = 4;
     }
 }
 class ItemTooltip extends GuiFrame {
@@ -605,23 +621,6 @@ class Room extends Widget {
     }
     toStringV2(vector) {
         return `${vector.x} ${vector.y}`;
-    }
-}
-class Item extends Sprite {
-    constructor(cartesianPosition, texture, name) {
-        super();
-        this.cartesianPosition = cartesianPosition;
-        this.isBeingHeld = false;
-        this.texture = texture;
-        this.pivot = new Vector2(0.5, 1);
-        this.size = new Vector2(32, 32);
-        this.name = name;
-        this.itemView = new HandItemView(this);
-    }
-    createSprite() {
-        const sprite = new Sprite(this.texture);
-        sprite.size.set(32, 32);
-        return sprite;
     }
 }
 class Spritesheet extends Widget {

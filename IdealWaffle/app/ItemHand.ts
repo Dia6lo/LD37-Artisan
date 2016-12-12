@@ -2,7 +2,7 @@ class ItemHand extends Widget {
     private contentHolder = new WidgetHolder();
     item: Item | undefined = undefined;
 
-    constructor(flipped: boolean, hint: string) {
+    constructor(flipped: boolean) {
         super();
         this.pivot = Vector2.half;
         const sprite = flipped ? Sprite.fromImage(AssetBundle.leftHand) : Sprite.fromImage(AssetBundle.rightHand);
