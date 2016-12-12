@@ -20,7 +20,7 @@ declare class AudioPlayer {
     private audioElements;
     private freeAudioElements;
     constructor();
-    play(source: string, loop?: boolean): void;
+    play(source: string, loop?: boolean, volume?: number): void;
 }
 declare class EventObserver<T extends Function> {
     fn: T;

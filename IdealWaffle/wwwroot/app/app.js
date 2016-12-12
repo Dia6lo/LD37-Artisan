@@ -282,10 +282,10 @@ class Game extends Application {
     constructor() {
         super(886, 554);
         this.renderer.backgroundColor = Color.black;
-        this.root = new Room();
         this.renderer.imageSmoothing = false;
     }
     run() {
+        this.root = new Room();
         super.run();
         assets.load();
     }
@@ -547,6 +547,9 @@ class ItemHandPanel extends Widget {
                                 hand.holdItem(item);
                                 this.showItem(undefined);
                                 item.onpickup();
+                            }
+                            if (hand.x === otherHand.x && !otherHand.item) {
+                                game.audio.play("assets/hlop.mp3");
                             }
                         }
                         else {
@@ -920,7 +923,7 @@ class Room extends Widget {
         this.player = new Player();
         this.transformer = new PositionTransformer();
         this.playerPosition = new Vector2(44, 65);
-        this.characterSpeed = 1;
+        this.characterSpeed = 0.3;
         this.debug = new Label();
         this.cityParallax = new CityParallax();
         this.items = [];
@@ -932,7 +935,7 @@ class Room extends Widget {
         this.postMarker = new Marker();
         this.postSpot = new SpecialSpot(Texture.fromImage(AssetBundle.send), "Send requested item");
         this.quests = Quest.createStory();
-        this.currentQuestId = 5;
+        this.currentQuestId = 0;
         this.questState = 0;
         this.movementBlocked = false;
         this.tvOpened = false;
@@ -987,6 +990,7 @@ class Room extends Widget {
         this.addChild(this.tip);
         this.tasks.add(this.showTipTask());
         this.tasks.add(this.showNewsTask());
+        game.audio.play("assets/ArtisanFixed.mp3", true, 0.75);
     }
     addTip(tip) {
         if (this.tips.filter(t => t === tip).length === 0) {
@@ -1083,12 +1087,14 @@ class Room extends Widget {
         return false;
     }
     *slideInMessage(messageBox) {
+        game.audio.play("assets/message.mp3");
         messageBox.position = this.offScreen;
         messageBox.opacity = 1;
         yield Wait.task(this.messageMoveTask(messageBox, this.offScreen, this.onScreen));
         this.tvSpot.text = "Close terminal";
     }
     *slideOutMessage(messageBox) {
+        game.audio.play("assets/message.mp3");
         yield Wait.task(this.messageMoveTask(messageBox, this.onScreen, this.offScreen));
         this.messageLayer.removeChild(messageBox);
         this.tvOpened = false;

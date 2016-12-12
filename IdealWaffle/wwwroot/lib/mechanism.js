@@ -69,7 +69,7 @@ class AudioPlayer {
         this.freeAudioElements = [];
         this.view = document.createElement("div");
     }
-    play(source, loop = false) {
+    play(source, loop = false, volume = 1) {
         let audioElement;
         if (!this.freeAudioElements.any()) {
             this.freeAudioElements = this.audioElements.filter(e => e.paused);
@@ -84,6 +84,7 @@ class AudioPlayer {
         }
         audioElement.src = source;
         audioElement.loop = loop;
+        audioElement.volume = volume;
         audioElement.play();
     }
 }

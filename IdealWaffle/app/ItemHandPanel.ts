@@ -83,6 +83,9 @@ class ItemHandPanel extends Widget {
                                 this.showItem(undefined);
                                 item.onpickup();
                             }
+                            if (hand.x === otherHand.x && !otherHand.item) {
+                                game.audio.play("assets/hlop.mp3");
+                            }
                         }
                         else {
                             if (hand.x === otherHand.x && otherHand.item) {

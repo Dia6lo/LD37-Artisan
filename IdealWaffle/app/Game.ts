@@ -5,11 +5,11 @@
     constructor() {
         super(886, 554);
         this.renderer.backgroundColor = Color.black;
-        this.root = new Room();
         this.renderer.imageSmoothing = false;
     }
 
     run(): void {
+        this.root = new Room();
         super.run();
         assets.load();
     }

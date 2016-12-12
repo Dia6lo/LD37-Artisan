@@ -3,7 +3,7 @@ class Room extends Widget {
     private player = new Player();
     private transformer = new PositionTransformer();
     private playerPosition = new Vector2(44, 65);
-    private characterSpeed = 1;
+    private characterSpeed = 0.3;
     private mousePosition: Vector2;
     private debug = new Label();
     private cityParallax = new CityParallax();
@@ -17,7 +17,7 @@ class Room extends Widget {
     private postMarker = new Marker();
     private postSpot = new SpecialSpot(Texture.fromImage(AssetBundle.send), "Send requested item");
     private quests = Quest.createStory();
-    private currentQuestId = 5;
+    private currentQuestId = 0;
     private questState = QuestState.Briefing;
     private movementBlocked = false;
     private tvOpened = false;
@@ -75,6 +75,7 @@ class Room extends Widget {
         this.addChild(this.tip);
         this.tasks.add(this.showTipTask());
         this.tasks.add(this.showNewsTask());
+        game.audio.play("assets/ArtisanFixed.mp3", true, 0.75);
     }
 
     addTip(tip: string) {
@@ -184,6 +185,7 @@ class Room extends Widget {
     private readonly offScreen = new Vector2(50, 600);
 
     private *slideInMessage(messageBox: MessageBox): Iterator<WaitPredicate> {
+        game.audio.play("assets/message.mp3");
         messageBox.position = this.offScreen;
         messageBox.opacity = 1;
         yield Wait.task(this.messageMoveTask(messageBox, this.offScreen, this.onScreen));
@@ -191,6 +193,7 @@ class Room extends Widget {
     }
 
     private *slideOutMessage(messageBox: MessageBox) {
+        game.audio.play("assets/message.mp3");
         yield Wait.task(this.messageMoveTask(messageBox, this.onScreen, this.offScreen));
         this.messageLayer.removeChild(messageBox);
         this.tvOpened = false;
