@@ -10,7 +10,7 @@ class Quest {
     static createStory(): Quest[] {
         return [
             {
-                items: [ItemType.Pipe, ItemType.Lighter, ItemType.Apple, ItemType.Clock, ItemType.Cat, ItemType.Pen, ItemType.Pen, ItemType.Pineapple],
+                items: [ItemType.Pipe, ItemType.Lighter, ItemType.Apple, ItemType.Clock, ItemType.Cat],
                 nickname: "",
                 briefing: [
                     "Good day, Artis@n! I have a great plan and I need",
@@ -20,13 +20,13 @@ class Quest {
                     "Looks strange, but I’ve heard about your craftstyle.",
                     "But if it's a fake, I will FIND YOU.",
                     "                                             Cheers."],
-                newsLine: "A man with a _______ successfully robbed main bank of CyberGhoul."
+                newsLine: "A man with a {0} successfully robbed main bank of CyberGhoul."
             },
             {
                 items: [ItemType.Sandwich, ItemType.Apple, ItemType.Cat],
                 nickname: "",
                 briefing: [
-                    "Our agent was killed by a new _______",
+                    "Our agent was killed by a new {0}",
                     "weapon yesterday. We will pay for a prototype",
                     "of new vision upgrade."],
                 debriefing: [

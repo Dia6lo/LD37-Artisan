@@ -22,6 +22,8 @@ class Room extends Widget {
     private movementBlocked = false;
     private tvOpened = false;
     private tvMessage: MessageBox;
+    private readonly fadeScreen = new FadeScreen(554);
+    private questItems: Item[] = [];
 
     constructor() {
         super();
@@ -60,6 +62,12 @@ class Room extends Widget {
         this.postMarker.disable();
         this.postSpot.oninteract = item => this.onPostSpotInteract(item);
         this.spawnQuestItems();
+        this.addChild(this.fadeScreen);
+        assets.loaded.subscribe(this.onAssetsLoaded, this);
+    }
+
+    private onAssetsLoaded(): void {
+        this.fadeScreen.fadeOut();
     }
 
     private spawnQuestItems() {
@@ -127,9 +135,27 @@ class Room extends Widget {
     }
 
     private onBedSpotInteract(item?: Item) {
-        const apple = this.createItem(ItemType.Sandwich);
-        this.addItem(apple);
+        if (this.questState !== QuestState.Sleep) {
+            return false;
+        }
+        this.tasks.add(this.sleepTask());
         return false;
+    }
+
+    private *sleepTask() {
+        this.movementBlocked = true;
+        this.fadeScreen.text = "Sleeping";
+        this.fadeScreen.fadeIn();
+        yield Wait.seconds(0.5);
+        this.currentQuestId++;
+        this.questState = QuestState.Briefing;
+        this.bedMarker.disable();
+        this.tvMarker.enable();
+        this.spawnQuestItems();
+        yield Wait.seconds(1);
+        this.fadeScreen.fadeOut();
+        yield Wait.seconds(0.5);
+        this.movementBlocked = false;
     }
 
     private onPostSpotInteract(item?: Item) {
@@ -137,6 +163,7 @@ class Room extends Widget {
             return false;
         }
         this.tvMarker.enable();
+        this.questItems.push(item);
         this.questState = QuestState.Debriefing;
         return true;
     }

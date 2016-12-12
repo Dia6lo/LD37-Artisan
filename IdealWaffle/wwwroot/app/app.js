@@ -253,28 +253,20 @@ class FadeScreen extends Widget {
 class Game extends Application {
     constructor() {
         super(886, 554);
-        this.assets = new AssetBundle();
         this.renderer.backgroundColor = Color.black;
-        this.assets.loaded.subscribe(this.onAssetsLoaded, this);
-        this.loadingScreen = new FadeScreen(554);
-        this.room = new Room();
-        this.root = new Widget();
-        this.root.addChild(this.room);
-        this.root.addChild(this.loadingScreen);
+        this.root = new Room();
         this.renderer.imageSmoothing = false;
-    }
-    onAssetsLoaded() {
-        this.loadingScreen.fadeOut();
     }
     run() {
         super.run();
-        this.assets.load();
+        assets.load();
     }
     setPixelFont(size) {
         this.renderer.context.font = `${size}px tooltipFont`;
     }
 }
 Game.neon = Color.fromComponents(41, 196, 191);
+var assets = new AssetBundle();
 var game;
 window.onload = () => {
     game = new Game();
@@ -755,7 +747,7 @@ class Quest {
     static createStory() {
         return [
             {
-                items: [17, 14, 0, 6, 4, 15, 15, 25],
+                items: [17, 14, 0, 6, 4],
                 nickname: "",
                 briefing: [
                     "Good day, Artis@n! I have a great plan and I need",
@@ -767,13 +759,13 @@ class Quest {
                     "But if it's a fake, I will FIND YOU.",
                     "                                             Cheers."
                 ],
-                newsLine: "A man with a _______ successfully robbed main bank of CyberGhoul."
+                newsLine: "A man with a {0} successfully robbed main bank of CyberGhoul."
             },
             {
                 items: [20, 0, 4],
                 nickname: "",
                 briefing: [
-                    "Our agent was killed by a new _______",
+                    "Our agent was killed by a new {0}",
                     "weapon yesterday. We will pay for a prototype",
                     "of new vision upgrade."
                 ],
@@ -885,6 +877,8 @@ class Room extends Widget {
         this.questState = 0;
         this.movementBlocked = false;
         this.tvOpened = false;
+        this.fadeScreen = new FadeScreen(554);
+        this.questItems = [];
         this.onScreen = new Vector2(50, 335);
         this.offScreen = new Vector2(50, 600);
         this.itemHandPanel = new ItemHandPanel(this);
@@ -917,6 +911,11 @@ class Room extends Widget {
         this.postMarker.disable();
         this.postSpot.oninteract = item => this.onPostSpotInteract(item);
         this.spawnQuestItems();
+        this.addChild(this.fadeScreen);
+        assets.loaded.subscribe(this.onAssetsLoaded, this);
+    }
+    onAssetsLoaded() {
+        this.fadeScreen.fadeOut();
     }
     spawnQuestItems() {
         for (let itemType of this.currentQuest.items) {
@@ -974,15 +973,33 @@ class Room extends Widget {
         }
     }
     onBedSpotInteract(item) {
-        const apple = this.createItem(20);
-        this.addItem(apple);
+        if (this.questState !== 3) {
+            return false;
+        }
+        this.tasks.add(this.sleepTask());
         return false;
+    }
+    *sleepTask() {
+        this.movementBlocked = true;
+        this.fadeScreen.text = "Sleeping";
+        this.fadeScreen.fadeIn();
+        yield Wait.seconds(0.5);
+        this.currentQuestId++;
+        this.questState = 0;
+        this.bedMarker.disable();
+        this.tvMarker.enable();
+        this.spawnQuestItems();
+        yield Wait.seconds(1);
+        this.fadeScreen.fadeOut();
+        yield Wait.seconds(0.5);
+        this.movementBlocked = false;
     }
     onPostSpotInteract(item) {
         if (!item || !ItemFactory.isItemSpecial(item) || this.questState !== 1) {
             return false;
         }
         this.tvMarker.enable();
+        this.questItems.push(item);
         this.questState = 2;
         return true;
     }
@@ -1210,13 +1227,18 @@ class MessageBox extends GuiFrame {
     }
 }
 class QuestMessageBox extends MessageBox {
-    constructor(quest, state) {
+    constructor(quest, state, item) {
         if (state === 2 || state === 3) {
             super(quest.nickname, quest.debriefing[0], quest.debriefing[1], quest.debriefing[2]);
         }
         else {
             super(quest.nickname, quest.briefing[0], quest.briefing[1], quest.briefing[2]);
         }
+        this.item = item;
+    }
+    format(text) {
+        if (this.item)
+            return text.replace("{0}", this.item.name);
     }
 }
 //# sourceMappingURL=app.js.map

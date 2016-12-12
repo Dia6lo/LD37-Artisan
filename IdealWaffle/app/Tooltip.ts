@@ -60,12 +60,21 @@ class MessageBox extends GuiFrame {
 }
 
 class QuestMessageBox extends MessageBox {
-    constructor(quest: Quest, state: QuestState) {
+    private readonly item?: Item;
+
+    constructor(quest: Quest, state: QuestState, item?: Item) {
         if (state === QuestState.Debriefing || state === QuestState.Sleep) {
             super(quest.nickname, quest.debriefing[0], quest.debriefing[1], quest.debriefing[2]);
         }
         else {
             super(quest.nickname, quest.briefing[0], quest.briefing[1], quest.briefing[2]);
         }
+        this.item = item;
+    }
+
+    private format(text: string) {
+        if (this.item)
+            return text.replace("{0}", this.item!.name);
+
     }
 }
