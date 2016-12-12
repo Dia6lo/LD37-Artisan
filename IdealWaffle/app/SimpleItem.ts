@@ -16,6 +16,7 @@ class SimpleItem extends DisplayableObject implements Item {
     name: string;
     protected image = new Sprite();
     cartesianPosition = new Vector2(50, 50);
+    type: ItemType;
 
     constructor(texture: Texture, size: Vector2, name: string) {
         super();
@@ -38,13 +39,16 @@ class CompoundItem extends DisplayableObject implements Item {
     name: string;
     cartesianPosition = new Vector2(50, 50);
 
-    constructor(public parts: SimpleItem[]) {
+    constructor(public parts: Item[]) {
         super();
         this.name = "";
         for (let item of parts) {
             this.name += `${item.name}-`;
         }
         this.name = this.name.substr(0, this.name.length - 1);
+        const sprite = this.createSprite();
+        sprite.pivot = Vector2.half;
+        this.addChild(sprite);
         this.displayView = new HandItemView(this);
     }
 

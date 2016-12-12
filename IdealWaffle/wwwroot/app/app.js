@@ -144,12 +144,14 @@ class ItemHand extends Widget {
         this.contentHolder.clear();
         if (item) {
             this.contentHolder.content = item.displayView;
+            this.justPickedUp = true;
         }
     }
 }
 class ItemHandPanel extends Widget {
-    constructor() {
+    constructor(room) {
         super();
+        this.room = room;
         this.rightHand = new ItemHand(false);
         this.leftHand = new ItemHand(true);
         this.itemHolder = new WidgetHolder();
@@ -176,24 +178,23 @@ class ItemHandPanel extends Widget {
         this.shownItem = item;
     }
     *handMovementTask(hand, key) {
+        const otherHand = hand === this.rightHand ? this.leftHand : this.rightHand;
         const start = hand.position.x;
         const end = this.itemHolder.position.x;
         const speed = 15;
-        let justPickedUp = false;
         let destination;
         while (true) {
             if (game.input.isKeyPressed(key)) {
                 destination = end;
             }
             else {
-                if (hand.x === end && hand.item && !justPickedUp) {
+                if (hand.x === end && hand.item && !hand.justPickedUp) {
                     const item = hand.item;
                     this.showItem(item);
-                    item.opacity = 1;
                     hand.holdItem(undefined);
                     item.onput();
                 }
-                justPickedUp = false;
+                hand.justPickedUp = false;
                 destination = start;
             }
             if (hand.x !== destination) {
@@ -203,13 +204,30 @@ class ItemHandPanel extends Widget {
                 if ((direction < 0 && hand.x < destination) || (direction > 0 && hand.x > destination)) {
                     hand.x = destination;
                 }
-                if (hand.x === destination && destination === end && this.shownItem && !hand.item) {
-                    const item = this.shownItem;
-                    hand.holdItem(item);
-                    item.opacity = 0;
-                    this.showItem(undefined);
-                    item.onpickup();
-                    justPickedUp = true;
+                if (hand.x === destination) {
+                    if (destination === end) {
+                        if (!hand.item) {
+                            if (hand.x === otherHand.x && otherHand.item && otherHand.item instanceof CompoundItem) {
+                                const item = otherHand.item;
+                                this.leftHand.holdItem(item.parts[0]);
+                                this.rightHand.holdItem(item.parts[1]);
+                            }
+                            else if (this.shownItem) {
+                                const item = this.shownItem;
+                                hand.holdItem(item);
+                                this.showItem(undefined);
+                                item.onpickup();
+                            }
+                        }
+                        else {
+                            if (hand.x === otherHand.x && otherHand.item) {
+                                const newItem = ItemFactory.mergeItems(this.rightHand.item, this.leftHand.item);
+                                this.room.setupItem(newItem);
+                                this.rightHand.holdItem(undefined);
+                                this.leftHand.holdItem(newItem);
+                            }
+                        }
+                    }
                 }
             }
             yield Wait.frame();
@@ -229,13 +247,13 @@ class ItemTooltip extends GuiFrame {
         this.addChild(this.nameLabel);
     }
     beforeRender(renderer) {
+        super.beforeRender(renderer);
         renderer.save();
         const fontSize = 32;
         game.setPixelFont(fontSize);
         const measure = new Vector2(renderer.measureText(this.nameLabel.text), fontSize);
         this.size = measure.add(new Vector2(15, 0));
         this.nameLabel.position = this.size.divide(2).subtract(new Vector2(0, 10));
-        super.beforeRender(renderer);
         renderer.restore();
     }
     render(renderer) {
@@ -464,9 +482,9 @@ class Room extends Widget {
         this.characterSpeed = 0.30;
         this.debug = new Label();
         this.cityParallax = new CityParallax();
-        this.itemHandPanel = new ItemHandPanel();
         this.items = [];
         this.roomObjects = new Widget();
+        this.itemHandPanel = new ItemHandPanel(this);
         this.cityParallax.position = new Vector2(304, 76);
         this.addChild(this.cityParallax);
         this.room.size = new Vector2(886, 554);
@@ -489,8 +507,10 @@ class Room extends Widget {
         this.debug.fontColor = Color.white;
         const apple = this.createItem(0);
         const apple1 = this.createItem(0);
+        const apple2 = this.createItem(0);
         this.addItem(apple);
         this.addItem(apple1);
+        this.addItem(apple2);
     }
     update(delta) {
         game.setPixelFont(32);
@@ -592,7 +612,11 @@ class Room extends Widget {
         }
     }
     createItem(type) {
-        const item = this.getItemObject(type);
+        const item = ItemFactory.createItem(type);
+        this.setupItem(item);
+        return item;
+    }
+    setupItem(item) {
         item.onpickup = () => {
             this.removeItem(item);
         };
@@ -601,7 +625,6 @@ class Room extends Widget {
             item.cartesianPosition = this.playerPosition;
             item.position = this.transformer.toIsometric(item.cartesianPosition);
         };
-        return item;
     }
     addItem(item) {
         this.roomObjects.addChild(item);
@@ -614,7 +637,29 @@ class Room extends Widget {
             this.items.splice(index, 1);
         }
     }
-    getItemObject(type) {
+    toStringV2(vector) {
+        return `${vector.x} ${vector.y}`;
+    }
+}
+class ItemFactory {
+    static mergeItems(first, second) {
+        if (first instanceof SimpleItem && second instanceof SimpleItem) {
+            for (let combo of this.combos) {
+                const match = (first.type === combo.pair.first && second.type === combo.pair.second) ||
+                    (second.type === combo.pair.first && first.type === combo.pair.second);
+                if (match) {
+                    return this.createItem(combo.result);
+                }
+            }
+        }
+        return new CompoundItem([first, second]);
+    }
+    static createItem(type) {
+        const item = this.getItemObject(type);
+        item.type = type;
+        return item;
+    }
+    static getItemObject(type) {
         switch (type) {
             case 0:
                 return new SimpleItem(Texture.fromImage(AssetBundle.apple), new Vector2(32, 32), "Apple");
@@ -622,10 +667,8 @@ class Room extends Widget {
                 throw "Error creating item";
         }
     }
-    toStringV2(vector) {
-        return `${vector.x} ${vector.y}`;
-    }
 }
+ItemFactory.combos = [];
 class DisplayableObject extends Widget {
     constructor() {
         super(...arguments);
@@ -663,6 +706,9 @@ class CompoundItem extends DisplayableObject {
             this.name += `${item.name}-`;
         }
         this.name = this.name.substr(0, this.name.length - 1);
+        const sprite = this.createSprite();
+        sprite.pivot = Vector2.half;
+        this.addChild(sprite);
         this.displayView = new HandItemView(this);
     }
     createSprite() {

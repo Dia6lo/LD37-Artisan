@@ -4,7 +4,7 @@ class ItemHandPanel extends Widget {
     private itemHolder = new WidgetHolder();
     shownItem: DisplayableObject | undefined = undefined;
 
-    constructor() {
+    constructor(private room: Room) {
         super();
         this.size.set(440, 100);
         this.pivot = Vector2.half;
@@ -30,24 +30,23 @@ class ItemHandPanel extends Widget {
     }
 
     private *handMovementTask(hand: ItemHand, key: Key) {
+        const otherHand = hand === this.rightHand ? this.leftHand : this.rightHand;
         const start = hand.position.x;
         const end = this.itemHolder.position.x;
         const speed = 15;
-        let justPickedUp = false;
         let destination: number;
         while (true) {
             if (game.input.isKeyPressed(key)) {
                 destination = end;
             }
             else {
-                if (hand.x === end && hand.item && !justPickedUp) {
+                if (hand.x === end && hand.item && !hand.justPickedUp) {
                     const item = hand.item as SimpleItem;
                     this.showItem(item);
-                    item.opacity = 1;
                     hand.holdItem(undefined);
                     item.onput();
                 }
-                justPickedUp = false;
+                hand.justPickedUp = false;
                 destination = start;
             }
             if (hand.x !== destination) {
@@ -57,13 +56,37 @@ class ItemHandPanel extends Widget {
                 if ((direction < 0 && hand.x < destination) || (direction > 0 && hand.x > destination)) {
                     hand.x = destination;
                 }
-                if (hand.x === destination && destination === end && this.shownItem && !hand.item) {
-                    const item = this.shownItem as SimpleItem;
-                    hand.holdItem(item);
-                    item.opacity = 0;
-                    this.showItem(undefined);
-                    item.onpickup();
-                    justPickedUp = true;
+                if (hand.x === destination) {
+                    if (destination === end) {
+                        if (!hand.item) {
+                            if (hand.x === otherHand.x && otherHand.item && otherHand.item instanceof CompoundItem) {
+                                const item = otherHand.item;
+                                this.leftHand.holdItem(item.parts[0]);
+                                this.rightHand.holdItem(item.parts[1]);
+                            }
+                            else if (this.shownItem) {
+                                const item = this.shownItem as SimpleItem;
+                                hand.holdItem(item);
+                                this.showItem(undefined);
+                                item.onpickup();
+                            }
+                        }
+                        else {
+                            if (hand.x === otherHand.x && otherHand.item) {
+                                const newItem = ItemFactory.mergeItems(this.rightHand.item!, this.leftHand.item!);
+                                this.room.setupItem(newItem);
+                                this.rightHand.holdItem(undefined);
+                                this.leftHand.holdItem(newItem);
+                            }
+                            /*else if (this.shownItem) {
+                                const newItem = ItemFactory.mergeItems(hand.item, this.shownItem as Item);
+                                this.room.setupItem(newItem);
+                                hand.holdItem(newItem);
+                                this.shownItem.onpickup();
+                                this.showItem(undefined);
+                            }*/
+                        }
+                    }
                 }
             }
             yield Wait.frame();

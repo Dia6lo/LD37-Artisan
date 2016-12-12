@@ -13,13 +13,13 @@ class ItemTooltip extends GuiFrame {
     }
 
     beforeRender(renderer: Renderer): void {
+        super.beforeRender(renderer);
         renderer.save();
         const fontSize = 32;
         game.setPixelFont(fontSize);
         const measure = new Vector2(renderer.measureText(this.nameLabel.text), fontSize);
         this.size = measure.add(new Vector2(15, 0));
         this.nameLabel.position = this.size.divide(2).subtract(new Vector2(0, 10));
-        super.beforeRender(renderer);
         renderer.restore();
     }
 

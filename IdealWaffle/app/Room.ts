@@ -7,12 +7,13 @@ class Room extends Widget {
     private mousePosition: Vector2;
     private debug = new Label();
     private cityParallax = new CityParallax();
-    private itemHandPanel = new ItemHandPanel();
+    private itemHandPanel: ItemHandPanel;
     private items: Item[] = [];
     private roomObjects = new Widget();
 
     constructor() {
         super();
+        this.itemHandPanel = new ItemHandPanel(this);
         this.cityParallax.position = new Vector2(304, 76);
         this.addChild(this.cityParallax);
         this.room.size = new Vector2(886, 554);
@@ -40,8 +41,10 @@ class Room extends Widget {
         //this.addChild(newsLabel);
         const apple = this.createItem(ItemType.Apple);
         const apple1 = this.createItem(ItemType.Apple);
+        const apple2 = this.createItem(ItemType.Apple);
         this.addItem(apple);
         this.addItem(apple1);
+        this.addItem(apple2);
         //this.itemHandPanel.leftHand.holdItem(compoundItem);
 
     }
@@ -153,7 +156,12 @@ class Room extends Widget {
     }
 
     createItem(type: ItemType): SimpleItem {
-        const item = this.getItemObject(type);
+        const item = ItemFactory.createItem(type);
+        this.setupItem(item);
+        return item;
+    }
+
+    setupItem(item: Item) {
         item.onpickup = () => {
             this.removeItem(item);
         };
@@ -162,7 +170,6 @@ class Room extends Widget {
             item.cartesianPosition = this.playerPosition;
             item.position = this.transformer.toIsometric(item.cartesianPosition);
         };
-        return item;
     }
 
     private addItem(item: Item) {
@@ -178,16 +185,41 @@ class Room extends Widget {
         }
     }
 
-    private getItemObject(type: ItemType) {
+    toStringV2(vector: Vector2) {
+        return `${vector.x} ${vector.y}`;
+    }
+}
+
+class ItemFactory {
+    private static combos: { pair: { first: ItemType, second: ItemType }, result: ItemType }[] = [
+        //{ pair: { first: ItemType.Apple, second: ItemType.Apple }, result: ItemType.Apple }
+    ];
+
+    static mergeItems(first: Item, second: Item): SimpleItem | CompoundItem {
+        if (first instanceof SimpleItem && second instanceof SimpleItem) {
+            for (let combo of this.combos) {
+                const match = (first.type === combo.pair.first && second.type === combo.pair.second) ||
+                    (second.type === combo.pair.first && first.type === combo.pair.second);
+                if (match) {
+                    return this.createItem(combo.result);
+                }
+            }
+        }
+        return new CompoundItem([first, second]);
+    }
+
+    static createItem(type: ItemType): SimpleItem {
+        const item = this.getItemObject(type);
+        item.type = type;
+        return item;
+    }
+
+    private static getItemObject(type: ItemType) {
         switch (type) {
             case ItemType.Apple:
                 return new SimpleItem(Texture.fromImage(AssetBundle.apple), new Vector2(32, 32), "Apple");
             default:
                 throw "Error creating item";
         }
-    }
-
-    toStringV2(vector: Vector2) {
-        return `${vector.x} ${vector.y}`;
     }
 }

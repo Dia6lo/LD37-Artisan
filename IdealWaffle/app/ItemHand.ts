@@ -1,6 +1,7 @@
 class ItemHand extends Widget {
     private contentHolder = new WidgetHolder();
     item: Item | undefined = undefined;
+    justPickedUp: boolean;
 
     constructor(flipped: boolean) {
         super();
@@ -25,6 +26,7 @@ class ItemHand extends Widget {
         this.contentHolder.clear();
         if (item) {
             this.contentHolder.content = item.displayView;
+            this.justPickedUp = true;
         }
     }
 }
