@@ -10,7 +10,8 @@ class AssetBundle {
             AssetBundle.playerWalkSheet,
             AssetBundle.rightHand,
             AssetBundle.leftHand,
-            AssetBundle.gui
+            AssetBundle.gui,
+            AssetBundle.marker
         ];
     }
     get loaded() {
@@ -45,6 +46,7 @@ AssetBundle.playerWalkSheet = AssetBundle.createPath("PlayerWalkSheet.png");
 AssetBundle.leftHand = AssetBundle.createPath("LeftHand.png");
 AssetBundle.rightHand = AssetBundle.createPath("RightHand.png");
 AssetBundle.gui = AssetBundle.createPath("Gui.png");
+AssetBundle.marker = AssetBundle.createPath("Marker.png");
 class CityParallax extends Widget {
     constructor() {
         super();
@@ -120,6 +122,34 @@ class HandItemView extends Widget {
         this.addChild(tooltip);
     }
 }
+class ItemFactory {
+    static mergeItems(first, second) {
+        if (first instanceof SimpleItem && second instanceof SimpleItem) {
+            for (let combo of this.combos) {
+                const match = (first.type === combo.pair.first && second.type === combo.pair.second) ||
+                    (second.type === combo.pair.first && first.type === combo.pair.second);
+                if (match) {
+                    return this.createItem(combo.result);
+                }
+            }
+        }
+        return new CompoundItem([first, second]);
+    }
+    static createItem(type) {
+        const item = this.getItemObject(type);
+        item.type = type;
+        return item;
+    }
+    static getItemObject(type) {
+        switch (type) {
+            case 0:
+                return new SimpleItem(Texture.fromImage(AssetBundle.apple), new Vector2(32, 32), "Apple");
+            default:
+                throw "Error creating item";
+        }
+    }
+}
+ItemFactory.combos = [];
 class ItemHand extends Widget {
     constructor(flipped) {
         super();
@@ -297,6 +327,36 @@ class LoadingScreen extends Widget {
         super.render(renderer);
     }
 }
+class Marker extends Sprite {
+    constructor() {
+        super(Texture.fromImage(AssetBundle.marker));
+        this.pivot = Vector2.half;
+        this.size.set(26, 22);
+        this.tasks.add(this.moveTask());
+    }
+    *moveTask() {
+        const min = 0;
+        const max = 5;
+        while (true) {
+            for (let t of Task.linearMotion(0.5, min, max)) {
+                this.position = this.start.clone();
+                this.position.y += t;
+                yield Wait.frame();
+            }
+            for (let t of Task.linearMotion(0.5, max, min)) {
+                this.position = this.start.clone();
+                this.position.y += t;
+                yield Wait.frame();
+            }
+        }
+    }
+    enable() {
+        this.opacity = 1;
+    }
+    disable() {
+        this.opacity = 0;
+    }
+}
 class WidgetHolder extends Widget {
     get content() {
         return this.children[0];
@@ -363,10 +423,10 @@ class PositionTransformer {
             new Rectangle(0, 0, 20, 38),
             new Rectangle(0, 0, 40, 20),
             new Rectangle(0, 34, 14, 60),
-            new Rectangle(0, 58, 18, 102),
+            new Rectangle(0, 56, 18, 102),
             new Rectangle(16, 86, 28, 102),
             new Rectangle(38, 0, 70, 10.01),
-            new Rectangle(68, 0, 97, 15),
+            new Rectangle(68, 0, 97, 15.5),
             new Rectangle(95, 0, 102, 7)
         ];
         this.isometricTop = new Vector2(432, 204);
@@ -478,12 +538,15 @@ class Room extends Widget {
         this.room = Sprite.fromImage(AssetBundle.room);
         this.player = new Player();
         this.transformer = new PositionTransformer();
-        this.playerPosition = new Vector2(50, 50);
+        this.playerPosition = new Vector2(44, 65);
         this.characterSpeed = 0.30;
         this.debug = new Label();
         this.cityParallax = new CityParallax();
         this.items = [];
         this.roomObjects = new Widget();
+        this.tvMarker = new Marker();
+        this.bedMarker = new Marker();
+        this.postMarker = new Marker();
         this.itemHandPanel = new ItemHandPanel(this);
         this.cityParallax.position = new Vector2(304, 76);
         this.addChild(this.cityParallax);
@@ -511,6 +574,13 @@ class Room extends Widget {
         this.addItem(apple);
         this.addItem(apple1);
         this.addItem(apple2);
+        this.setupMarker(this.tvMarker, 268, 145);
+        this.setupMarker(this.bedMarker, 165, 305);
+        this.setupMarker(this.postMarker, 725, 320);
+    }
+    setupMarker(marker, x, y) {
+        marker.start = new Vector2(x, y);
+        this.addChild(marker);
     }
     update(delta) {
         game.setPixelFont(32);
@@ -641,34 +711,6 @@ class Room extends Widget {
         return `${vector.x} ${vector.y}`;
     }
 }
-class ItemFactory {
-    static mergeItems(first, second) {
-        if (first instanceof SimpleItem && second instanceof SimpleItem) {
-            for (let combo of this.combos) {
-                const match = (first.type === combo.pair.first && second.type === combo.pair.second) ||
-                    (second.type === combo.pair.first && first.type === combo.pair.second);
-                if (match) {
-                    return this.createItem(combo.result);
-                }
-            }
-        }
-        return new CompoundItem([first, second]);
-    }
-    static createItem(type) {
-        const item = this.getItemObject(type);
-        item.type = type;
-        return item;
-    }
-    static getItemObject(type) {
-        switch (type) {
-            case 0:
-                return new SimpleItem(Texture.fromImage(AssetBundle.apple), new Vector2(32, 32), "Apple");
-            default:
-                throw "Error creating item";
-        }
-    }
-}
-ItemFactory.combos = [];
 class DisplayableObject extends Widget {
     constructor() {
         super(...arguments);

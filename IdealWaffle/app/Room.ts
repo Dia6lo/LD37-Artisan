@@ -2,7 +2,7 @@ class Room extends Widget {
     private room = Sprite.fromImage(AssetBundle.room);
     private player = new Player();
     private transformer = new PositionTransformer();
-    private playerPosition = new Vector2(50, 50);
+    private playerPosition = new Vector2(44, 65);
     private characterSpeed = 0.30;
     private mousePosition: Vector2;
     private debug = new Label();
@@ -10,6 +10,9 @@ class Room extends Widget {
     private itemHandPanel: ItemHandPanel;
     private items: Item[] = [];
     private roomObjects = new Widget();
+    private tvMarker = new Marker();
+    private bedMarker = new Marker();
+    private postMarker = new Marker();
 
     constructor() {
         super();
@@ -45,8 +48,14 @@ class Room extends Widget {
         this.addItem(apple);
         this.addItem(apple1);
         this.addItem(apple2);
-        //this.itemHandPanel.leftHand.holdItem(compoundItem);
+        this.setupMarker(this.tvMarker, 268, 145);
+        this.setupMarker(this.bedMarker, 165, 305);
+        this.setupMarker(this.postMarker, 725, 320);
+    }
 
+    private setupMarker(marker: Marker, x: number, y: number) {
+        marker.start = new Vector2(x, y);
+        this.addChild(marker);
     }
 
     update(delta: number): void {
@@ -187,39 +196,5 @@ class Room extends Widget {
 
     toStringV2(vector: Vector2) {
         return `${vector.x} ${vector.y}`;
-    }
-}
-
-class ItemFactory {
-    private static combos: { pair: { first: ItemType, second: ItemType }, result: ItemType }[] = [
-        //{ pair: { first: ItemType.Apple, second: ItemType.Apple }, result: ItemType.Apple }
-    ];
-
-    static mergeItems(first: Item, second: Item): SimpleItem | CompoundItem {
-        if (first instanceof SimpleItem && second instanceof SimpleItem) {
-            for (let combo of this.combos) {
-                const match = (first.type === combo.pair.first && second.type === combo.pair.second) ||
-                    (second.type === combo.pair.first && first.type === combo.pair.second);
-                if (match) {
-                    return this.createItem(combo.result);
-                }
-            }
-        }
-        return new CompoundItem([first, second]);
-    }
-
-    static createItem(type: ItemType): SimpleItem {
-        const item = this.getItemObject(type);
-        item.type = type;
-        return item;
-    }
-
-    private static getItemObject(type: ItemType) {
-        switch (type) {
-            case ItemType.Apple:
-                return new SimpleItem(Texture.fromImage(AssetBundle.apple), new Vector2(32, 32), "Apple");
-            default:
-                throw "Error creating item";
-        }
     }
 }

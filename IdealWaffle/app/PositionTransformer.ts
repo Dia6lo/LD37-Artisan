@@ -9,13 +9,13 @@
         // Drawer
         new Rectangle(0, 34, 14, 60),
         // Bed
-        new Rectangle(0, 58, 18, 102),
+        new Rectangle(0, 56, 18, 102),
         // Box
         new Rectangle(16, 86, 28, 102),
         // Bookshelve
         new Rectangle(38, 0, 70, 10.01),
         // Poststand
-        new Rectangle(68, 0, 97, 15),
+        new Rectangle(68, 0, 97, 15.5),
         // Poststand cables
         new Rectangle(95, 0, 102, 7)
     ];
