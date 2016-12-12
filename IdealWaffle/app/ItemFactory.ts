@@ -21,6 +21,10 @@ class ItemFactory {
         if (item instanceof CompoundItem) {
             return true;
         }
+        return this.isComboItem(item);
+    }
+
+    static isComboItem(item: Item) {
         const simpleItem = item as SimpleItem;
         const matches = this.combos.filter(c => c.result === simpleItem.type);
         return matches.length > 0;
@@ -38,6 +42,7 @@ class ItemFactory {
         }
         return new CompoundItem([first, second]);
     }
+
 
     static createItem(type: ItemType): SimpleItem {
         const item = this.getItemObject(type);

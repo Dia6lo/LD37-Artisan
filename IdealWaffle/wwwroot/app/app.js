@@ -304,6 +304,9 @@ class ItemFactory {
         if (item instanceof CompoundItem) {
             return true;
         }
+        return this.isComboItem(item);
+    }
+    static isComboItem(item) {
         const simpleItem = item;
         const matches = this.combos.filter(c => c.result === simpleItem.type);
         return matches.length > 0;
@@ -882,7 +885,7 @@ class Room extends Widget {
         this.player = new Player();
         this.transformer = new PositionTransformer();
         this.playerPosition = new Vector2(44, 65);
-        this.characterSpeed = 1;
+        this.characterSpeed = 0.3;
         this.debug = new Label();
         this.cityParallax = new CityParallax();
         this.items = [];
@@ -1019,6 +1022,7 @@ class Room extends Widget {
         if (!item || !ItemFactory.isItemSpecial(item) || this.questState !== 1) {
             return false;
         }
+        this.postMarker.disable();
         this.tvMarker.enable();
         if (this.currentQuestId === 0) {
             QuestMessageBox.weapon = item;
@@ -1037,7 +1041,21 @@ class Room extends Widget {
         this.updateItemPanel();
         this.updateParallax();
         this.sortRoomObjects();
+        this.updatePostMarker();
         super.update(delta);
+    }
+    updatePostMarker() {
+        if (this.questState !== 1) {
+            return;
+        }
+        const hands = [this.itemHandPanel.leftHand, this.itemHandPanel.rightHand];
+        const goodItems = hands.filter(h => h.item && ItemFactory.isItemSpecial(h.item)).length > 0;
+        if (goodItems) {
+            this.postMarker.enable();
+        }
+        else {
+            this.postMarker.disable();
+        }
     }
     sortRoomObjects() {
         const objects = this.roomObjects.children.slice();

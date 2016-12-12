@@ -3,7 +3,7 @@ class Room extends Widget {
     private player = new Player();
     private transformer = new PositionTransformer();
     private playerPosition = new Vector2(44, 65);
-    private characterSpeed = 1;
+    private characterSpeed = 0.3;
     private mousePosition: Vector2;
     private debug = new Label();
     private cityParallax = new CityParallax();
@@ -162,6 +162,7 @@ class Room extends Widget {
         if (!item || !ItemFactory.isItemSpecial(item) || this.questState !== QuestState.Craft) {
             return false;
         }
+        this.postMarker.disable();
         this.tvMarker.enable();
         if (this.currentQuestId === 0) {
             QuestMessageBox.weapon = item;
@@ -182,7 +183,22 @@ class Room extends Widget {
         this.updateItemPanel();
         this.updateParallax();
         this.sortRoomObjects();
+        this.updatePostMarker();
         super.update(delta);
+    }
+
+    private updatePostMarker() {
+        if (this.questState !== QuestState.Craft) {
+            return;
+        }
+        const hands = [this.itemHandPanel.leftHand, this.itemHandPanel.rightHand];
+        const goodItems = hands.filter(h => h.item && ItemFactory.isItemSpecial(h.item)).length > 0;
+        if (goodItems) {
+            this.postMarker.enable();
+        }
+        else {
+            this.postMarker.disable();
+        }
     }
 
     private sortRoomObjects() {
