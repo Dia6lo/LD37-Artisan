@@ -16,6 +16,12 @@ class Room extends Widget {
     private bedSpot = new SpecialSpot(Texture.fromImage(AssetBundle.sleep), "Go to bed");
     private postMarker = new Marker();
     private postSpot = new SpecialSpot(Texture.fromImage(AssetBundle.send), "Send requested item");
+    private quests = Quest.createStory();
+    private currentQuestId = 0;
+    private questState = QuestState.Briefing;
+    private movementBlocked = false;
+    private tvOpened = false;
+    private tvMessage: MessageBox;
 
     constructor() {
         super();
@@ -53,27 +59,86 @@ class Room extends Widget {
         this.setupMarker(this.postMarker, 725, 320);
         this.postMarker.disable();
         this.postSpot.oninteract = item => this.onPostSpotInteract(item);
-        const messageBox = new MessageBox("Linver",
-            "Good day, Artis@n! I have a great plan and I need",
-            "a powerful weapon to accomplish it.",
-            "Craft it quickly and quietly and I will buy it.");
-        messageBox.position.set(50, 335);
-        //this.addChild(messageBox);
+        this.spawnQuestItems();
+    }
+
+    private spawnQuestItems() {
+        for (let itemType of this.currentQuest.items) {
+            const item = this.createItem(itemType);
+            item.cartesianPosition = this.transformer.getRandomPosition();
+            item.position = this.transformer.toIsometric(item.cartesianPosition);
+            this.addItem(item);
+        }
+    }
+
+    private get currentQuest() {
+        return this.quests[this.currentQuestId];
     }
 
     private onTvSpotInteract(item?: Item) {
-        const apple = this.createItem(ItemType.FlameThrower);
-        this.addItem(apple);
+        if (this.tvMessage && this.tvMessage.tasks.length !== 0) {
+            return false;
+        }
+        if (!this.tvOpened) {
+            this.tvOpened = true;
+            this.movementBlocked = true;
+            this.tvMessage = new QuestMessageBox(this.currentQuest, this.questState);
+            this.tasks.add(this.slideInMessage(this.tvMessage));
+            this.addChild(this.tvMessage);
+            this.tvMessage.opacity = 0;
+        }
+        else {
+            this.tvMessage.tasks.add(this.slideOutMessage(this.tvMessage));
+        }
+        return false;
+    }
+
+    private readonly onScreen = new Vector2(50, 335);
+    private readonly offScreen = new Vector2(50, 600);
+
+    private *slideInMessage(messageBox: MessageBox): Iterator<WaitPredicate> {
+        messageBox.position = this.offScreen;
+        messageBox.opacity = 1;
+        yield Wait.task(this.messageMoveTask(messageBox, this.offScreen, this.onScreen));
+    }
+
+    private *slideOutMessage(messageBox: MessageBox) {
+        yield Wait.task(this.messageMoveTask(messageBox, this.onScreen, this.offScreen));
+        this.removeChild(messageBox);
+        this.tvOpened = false;
+        this.movementBlocked = false;
+        if (this.questState === QuestState.Briefing) {
+            this.questState = QuestState.Craft;
+            this.tvMarker.disable();
+        }
+        else if (this.questState === QuestState.Debriefing) {
+            this.questState = QuestState.Sleep;
+            this.tvMarker.disable();
+            this.bedMarker.enable();
+        }
+    }
+
+    private *messageMoveTask(messageBox: MessageBox, from: Vector2, to: Vector2) {
+        messageBox.position = from.clone();
+        for (let t of Task.linearMotion(0.25, from.y, to.y)) {
+            messageBox.y = t;
+            yield Wait.frame();
+        }
     }
 
     private onBedSpotInteract(item?: Item) {
-        const apple = this.createItem(ItemType.Apple);
+        const apple = this.createItem(ItemType.Sandwich);
         this.addItem(apple);
+        return false;
     }
 
     private onPostSpotInteract(item?: Item) {
-        const apple = this.createItem(ItemType.Perpetual);
-        this.addItem(apple);
+        if (!item || !ItemFactory.isItemSpecial(item) || this.questState !== QuestState.Craft) {
+            return false;
+        }
+        this.tvMarker.enable();
+        this.questState = QuestState.Debriefing;
+        return true;
     }
 
     private setupMarker(marker: Marker, x: number, y: number) {
@@ -116,7 +181,7 @@ class Room extends Widget {
 
     private updateCharacterPosition() {
         const controls = [Key.Left, Key.Right, Key.Up, Key.Down];
-        const pressed = controls.filter(key => game.input.isKeyPressed(key));
+        const pressed = this.movementBlocked ? [] : controls.filter(key => game.input.isKeyPressed(key));
         let direction = Vector2.zero;
         for (let key of pressed) {
             direction = direction.add(this.getVelocityDirection(key));
@@ -141,9 +206,9 @@ class Room extends Widget {
         this.player.position = this.transformer
             .moveInIsometric(this.player.position, this.transformer.toIsometric(this.playerPosition));
         this.playerPosition = this.transformer.toCartesian(this.player.position);
-        this.debug.text = `${this.toStringV2(this.playerPosition)} ${this.toStringV2(this.player.position)}`;
+        this.debug.text = `${Room.toStringV2(this.playerPosition)} ${Room.toStringV2(this.player.position)}`;
         if (this.mousePosition) {
-            this.debug.text += ` ${this.toStringV2(this.mousePosition)}  ${this
+            this.debug.text += ` ${Room.toStringV2(this.mousePosition)}  ${Room
                 .toStringV2(this.transformer.toCartesian(this.mousePosition))}`;
         }
     }
@@ -242,7 +307,7 @@ class Room extends Widget {
         }
     }
 
-    toStringV2(vector: Vector2) {
+    static toStringV2(vector: Vector2) {
         return `${vector.x} ${vector.y}`;
     }
 }

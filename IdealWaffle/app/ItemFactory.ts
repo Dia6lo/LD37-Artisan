@@ -1,7 +1,16 @@
 class ItemFactory {
     private static combos: { pair: { first: ItemType; second: ItemType }; result: ItemType }[] = [
-        //{ pair: { first: ItemType.Apple, second: ItemType.Apple }, result: ItemType.Apple }
+        { pair: { first: ItemType.Cat, second: ItemType.Sandwich }, result: ItemType.Perpetual }
     ];
+
+    static isItemSpecial(item: Item) {
+        if (item instanceof CompoundItem) {
+            return true;
+        }
+        const simpleItem = item as SimpleItem;
+        const matches = this.combos.filter(c => c.result === simpleItem.type);
+        return matches.length > 0;
+    }
 
     static mergeItems(first: Item, second: Item): SimpleItem | CompoundItem {
         if (first instanceof SimpleItem && second instanceof SimpleItem) {
@@ -43,7 +52,7 @@ class ItemFactory {
             case ItemType.Dinner:
                 return this.constructItem(AssetBundle.dinner, "Dinner");
             case ItemType.FlameThrower:
-                return this.constructItem(AssetBundle.flameThrower, "FlameThrower");
+                return this.constructItem(AssetBundle.flameThrower, "Flamethrower");
             case ItemType.Flashlight:
                 return this.constructItem(AssetBundle.flashlight, "Flashlight");
             case ItemType.Glass:
@@ -57,21 +66,21 @@ class ItemFactory {
             case ItemType.Pen:
                 return this.constructItem(AssetBundle.pen, "Pen");
             case ItemType.Perpetual:
-                return this.constructItem(AssetBundle.perpetual, "Perpetual");
+                return this.constructItem(AssetBundle.perpetual, "Perpetual Motion Machine");
             case ItemType.Pipe:
                 return this.constructItem(AssetBundle.pipe, "Pipe");
             case ItemType.Robot:
                 return this.constructItem(AssetBundle.robot, "Robot");
             case ItemType.Roller:
-                return this.constructItem(AssetBundle.roller, "Roller");
+                return this.constructItem(AssetBundle.roller, "Roller Skates");
             case ItemType.Sandwich:
                 return this.constructItem(AssetBundle.sandwich, "Sandwich");
             case ItemType.Smoke:
-                return this.constructItem(AssetBundle.smoke, "Smoke");
+                return this.constructItem(AssetBundle.smoke, "Smoke Grenade");
             case ItemType.Spyglass:
                 return this.constructItem(AssetBundle.spyglass, "Spyglass");
             case ItemType.TimeMachine:
-                return this.constructItem(AssetBundle.timeMachine, "TimeMachine");
+                return this.constructItem(AssetBundle.timeMachine, "Time Machine");
             case ItemType.Unicorn:
                 return this.constructItem(AssetBundle.unicorn, "Unicorn");
             default:

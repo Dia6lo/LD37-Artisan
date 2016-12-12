@@ -59,8 +59,12 @@ class ItemHandPanel extends Widget {
                 if (hand.x === destination) {
                     if (destination === end) {
                         if (this.shownItem && !this.shownItem.pickable) {
-                            this.shownItem.oninteract(hand.item);
-                            hand.justPickedUp = true;
+                            if (this.shownItem.oninteract(hand.item)) {
+                                hand.holdItem(undefined);
+                            }
+                            else {
+                                hand.justPickedUp = true;
+                            }
                         }
                         else if (!hand.item) {
                             if (hand.x === otherHand.x && otherHand.item && otherHand.item instanceof CompoundItem) {

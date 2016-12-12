@@ -18,6 +18,15 @@ class AssetBundle {
     static readonly sleep = AssetBundle.createPath("Sleep.png");
     static readonly send = AssetBundle.createPath("Send.png");
 
+    // Faces
+    static readonly boss = AssetBundle.createPath("Boss.png");
+    static readonly goverment = AssetBundle.createPath("Goverment.png");
+    static readonly hero = AssetBundle.createPath("Hero.png");
+    static readonly secretMan = AssetBundle.createPath("SecretMan.png");
+    static readonly verySecretMan = AssetBundle.createPath("VerySecretMan.png");
+    static readonly western = AssetBundle.createPath("Western.png");
+    static readonly folk = AssetBundle.createPath("Folk.png");
+
     // Items
     static readonly apple = AssetBundle.createItemPath("Apple.png");
     static readonly bomb = AssetBundle.createItemPath("Bomb.png");
@@ -59,6 +68,14 @@ class AssetBundle {
         AssetBundle.watchTv,
         AssetBundle.sleep,
         AssetBundle.send,
+
+        AssetBundle.boss,
+        AssetBundle.goverment,
+        AssetBundle.hero,
+        AssetBundle.secretMan,
+        AssetBundle.verySecretMan,
+        AssetBundle.western,
+        AssetBundle.folk,
 
         AssetBundle.apple,
         AssetBundle.bomb,

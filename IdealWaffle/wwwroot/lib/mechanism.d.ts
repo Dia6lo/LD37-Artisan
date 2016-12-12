@@ -379,6 +379,7 @@ declare class Task {
 declare class TaskList {
     static current?: TaskList;
     private tasks;
+    readonly length: number;
     add(task: Task | Iterator<WaitPredicate>): void;
     update(delta: number): void;
 }
@@ -594,6 +595,7 @@ declare class Rectangle {
     readonly width: number;
     readonly height: number;
     contains(value: Vector2): boolean;
+    clone(): Rectangle;
 }
 declare class Vector2 {
     x: number;
@@ -616,7 +618,7 @@ declare class Vector2Mutator {
     private readonly origin;
     constructor(origin: Vector2);
     add(value: Vector2 | number): Vector2Mutator;
-    subtract(value: Vector2): Vector2Mutator;
+    subtract(value: Vector2 | number): Vector2Mutator;
     multiply(value: Vector2 | number): Vector2Mutator;
     divide(value: Vector2 | number): Vector2Mutator;
     private apply(value, fn);

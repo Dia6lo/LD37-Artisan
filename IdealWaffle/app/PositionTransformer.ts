@@ -136,4 +136,29 @@
         const y = (noOffset.y / this.yModifier - noOffset.x / this.xModifier) / 2;
         return new Vector2(x, y);
     }
+
+    getRandomPosition() {
+        let position: Vector2 | undefined = undefined;
+        const low = new Vector2(40, 100);
+        const high = new Vector2(100, 40);
+        while (!position) {
+            position = new Vector2(Math.random(), Math.random()).multiply(100);
+            const side = (high.x - low.x) * (position.y - low.y) - (position.x - low.x) * (high.y - low.y);
+            if (side >= 0) {
+                // we are on right side
+                position = undefined;
+                continue;
+            }
+            for (let obstacle of this.obstacles) {
+                const bigObstacle = obstacle.clone();
+                bigObstacle.min.mutate().subtract(7);
+                bigObstacle.max.mutate().add(7);
+                if (bigObstacle.contains(position!)) {
+                    position = undefined;
+                    break;
+                }
+            }
+        }
+        return position;
+    }
 }

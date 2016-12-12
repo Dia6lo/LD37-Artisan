@@ -795,6 +795,9 @@ class Task {
     }
 }
 class TaskList {
+    get length() {
+        return this.tasks ? this.tasks.length : 0;
+    }
     add(task) {
         if (!this.tasks) {
             this.tasks = [];
@@ -1113,6 +1116,9 @@ class Rectangle {
     }
     contains(value) {
         return (value.x >= this.min.x) && (value.y >= this.min.y) && (value.x < this.max.x) && (value.y < this.max.y);
+    }
+    clone() {
+        return new Rectangle(this.min.clone(), this.max.clone());
     }
 }
 class Vector2 {

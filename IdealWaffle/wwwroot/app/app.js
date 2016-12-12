@@ -14,6 +14,13 @@ class AssetBundle {
             AssetBundle.watchTv,
             AssetBundle.sleep,
             AssetBundle.send,
+            AssetBundle.boss,
+            AssetBundle.goverment,
+            AssetBundle.hero,
+            AssetBundle.secretMan,
+            AssetBundle.verySecretMan,
+            AssetBundle.western,
+            AssetBundle.folk,
             AssetBundle.apple,
             AssetBundle.bomb,
             AssetBundle.boot,
@@ -79,6 +86,13 @@ AssetBundle.marker = AssetBundle.createPath("Marker.png");
 AssetBundle.watchTv = AssetBundle.createPath("WatchTV.png");
 AssetBundle.sleep = AssetBundle.createPath("Sleep.png");
 AssetBundle.send = AssetBundle.createPath("Send.png");
+AssetBundle.boss = AssetBundle.createPath("Boss.png");
+AssetBundle.goverment = AssetBundle.createPath("Goverment.png");
+AssetBundle.hero = AssetBundle.createPath("Hero.png");
+AssetBundle.secretMan = AssetBundle.createPath("SecretMan.png");
+AssetBundle.verySecretMan = AssetBundle.createPath("VerySecretMan.png");
+AssetBundle.western = AssetBundle.createPath("Western.png");
+AssetBundle.folk = AssetBundle.createPath("Folk.png");
 AssetBundle.apple = AssetBundle.createItemPath("Apple.png");
 AssetBundle.bomb = AssetBundle.createItemPath("Bomb.png");
 AssetBundle.boot = AssetBundle.createItemPath("Boot.png");
@@ -123,7 +137,7 @@ class DisplayableObject extends Widget {
         super(...arguments);
         this.onpickup = () => { };
         this.onput = () => { };
-        this.oninteract = () => { };
+        this.oninteract = () => false;
         this.pickable = true;
     }
 }
@@ -254,6 +268,14 @@ class HandItemView extends PanelObjectView {
     }
 }
 class ItemFactory {
+    static isItemSpecial(item) {
+        if (item instanceof CompoundItem) {
+            return true;
+        }
+        const simpleItem = item;
+        const matches = this.combos.filter(c => c.result === simpleItem.type);
+        return matches.length > 0;
+    }
     static mergeItems(first, second) {
         if (first instanceof SimpleItem && second instanceof SimpleItem) {
             for (let combo of this.combos) {
@@ -292,7 +314,7 @@ class ItemFactory {
             case 8:
                 return this.constructItem(AssetBundle.dinner, "Dinner");
             case 9:
-                return this.constructItem(AssetBundle.flameThrower, "FlameThrower");
+                return this.constructItem(AssetBundle.flameThrower, "Flamethrower");
             case 10:
                 return this.constructItem(AssetBundle.flashlight, "Flashlight");
             case 11:
@@ -306,21 +328,21 @@ class ItemFactory {
             case 15:
                 return this.constructItem(AssetBundle.pen, "Pen");
             case 16:
-                return this.constructItem(AssetBundle.perpetual, "Perpetual");
+                return this.constructItem(AssetBundle.perpetual, "Perpetual Motion Machine");
             case 17:
                 return this.constructItem(AssetBundle.pipe, "Pipe");
             case 18:
                 return this.constructItem(AssetBundle.robot, "Robot");
             case 19:
-                return this.constructItem(AssetBundle.roller, "Roller");
+                return this.constructItem(AssetBundle.roller, "Roller Skates");
             case 20:
                 return this.constructItem(AssetBundle.sandwich, "Sandwich");
             case 21:
-                return this.constructItem(AssetBundle.smoke, "Smoke");
+                return this.constructItem(AssetBundle.smoke, "Smoke Grenade");
             case 22:
                 return this.constructItem(AssetBundle.spyglass, "Spyglass");
             case 23:
-                return this.constructItem(AssetBundle.timeMachine, "TimeMachine");
+                return this.constructItem(AssetBundle.timeMachine, "Time Machine");
             case 24:
                 return this.constructItem(AssetBundle.unicorn, "Unicorn");
             default:
@@ -331,7 +353,9 @@ class ItemFactory {
         return new SimpleItem(Texture.fromImage(path), tooltip);
     }
 }
-ItemFactory.combos = [];
+ItemFactory.combos = [
+    { pair: { first: 4, second: 20 }, result: 16 }
+];
 class ItemHand extends Widget {
     constructor(flipped) {
         super();
@@ -419,8 +443,12 @@ class ItemHandPanel extends Widget {
                 if (hand.x === destination) {
                     if (destination === end) {
                         if (this.shownItem && !this.shownItem.pickable) {
-                            this.shownItem.oninteract(hand.item);
-                            hand.justPickedUp = true;
+                            if (this.shownItem.oninteract(hand.item)) {
+                                hand.holdItem(undefined);
+                            }
+                            else {
+                                hand.justPickedUp = true;
+                            }
                         }
                         else if (!hand.item) {
                             if (hand.x === otherHand.x && otherHand.item && otherHand.item instanceof CompoundItem) {
@@ -690,8 +718,140 @@ class PositionTransformer {
         const y = (noOffset.y / this.yModifier - noOffset.x / this.xModifier) / 2;
         return new Vector2(x, y);
     }
+    getRandomPosition() {
+        let position = undefined;
+        const low = new Vector2(40, 100);
+        const high = new Vector2(100, 40);
+        while (!position) {
+            position = new Vector2(Math.random(), Math.random()).multiply(100);
+            const side = (high.x - low.x) * (position.y - low.y) - (position.x - low.x) * (high.y - low.y);
+            if (side >= 0) {
+                position = undefined;
+                continue;
+            }
+            for (let obstacle of this.obstacles) {
+                const bigObstacle = obstacle.clone();
+                bigObstacle.min.mutate().subtract(7);
+                bigObstacle.max.mutate().add(7);
+                if (bigObstacle.contains(position)) {
+                    position = undefined;
+                    break;
+                }
+            }
+        }
+        return position;
+    }
 }
 class Quest {
+    static createStory() {
+        return [
+            {
+                items: [17, 14, 0, 6, 4],
+                nickname: "",
+                briefing: [
+                    "Good day, Artis@n! I have a great plan and I need",
+                    "a powerful weapon to accomplish it.",
+                    "Craft it quickly and quietly and I will buy it."
+                ],
+                debriefing: [
+                    "Looks strange, but I’ve heard about your craftstyle.",
+                    "But if it's a fake, I will FIND YOU.",
+                    "                                             Cheers."
+                ],
+                newsLine: "A man with a _______ successfully robbed main bank of CyberGhoul."
+            },
+            {
+                items: [20, 0, 4],
+                nickname: "",
+                briefing: [
+                    "Our agent was killed by a new _______",
+                    "weapon yesterday. We will pay for a prototype",
+                    "of new vision upgrade."
+                ],
+                debriefing: [
+                    "Good job, agent Artis@n. We sent the device to",
+                    "our R&D department for subsequent research.",
+                    ""
+                ],
+                newsLine: "Government has increased funding for vision upgrades research. *** Taxes were increased by 15%"
+            },
+            {
+                items: [],
+                nickname: "",
+                briefing: [
+                    "",
+                    "",
+                    ""
+                ],
+                debriefing: [
+                    "",
+                    "",
+                    ""
+                ],
+                newsLine: ""
+            },
+            {
+                items: [],
+                nickname: "",
+                briefing: [
+                    "",
+                    "",
+                    ""
+                ],
+                debriefing: [
+                    "",
+                    "",
+                    ""
+                ],
+                newsLine: ""
+            },
+            {
+                items: [],
+                nickname: "",
+                briefing: [
+                    "",
+                    "",
+                    ""
+                ],
+                debriefing: [
+                    "",
+                    "",
+                    ""
+                ],
+                newsLine: ""
+            },
+            {
+                items: [],
+                nickname: "",
+                briefing: [
+                    "",
+                    "",
+                    ""
+                ],
+                debriefing: [
+                    "",
+                    "",
+                    ""
+                ],
+                newsLine: ""
+            },
+            {
+                items: [],
+                nickname: "",
+                briefing: [
+                    "",
+                    "",
+                    ""
+                ],
+                debriefing: [
+                    "",
+                    "",
+                    ""
+                ],
+                newsLine: ""
+            },
+        ];
+    }
 }
 class Room extends Widget {
     constructor() {
@@ -711,6 +871,13 @@ class Room extends Widget {
         this.bedSpot = new SpecialSpot(Texture.fromImage(AssetBundle.sleep), "Go to bed");
         this.postMarker = new Marker();
         this.postSpot = new SpecialSpot(Texture.fromImage(AssetBundle.send), "Send requested item");
+        this.quests = Quest.createStory();
+        this.currentQuestId = 0;
+        this.questState = 0;
+        this.movementBlocked = false;
+        this.tvOpened = false;
+        this.onScreen = new Vector2(50, 335);
+        this.offScreen = new Vector2(50, 600);
         this.itemHandPanel = new ItemHandPanel(this);
         this.cityParallax.position = new Vector2(304, 76);
         this.addChild(this.cityParallax);
@@ -740,20 +907,75 @@ class Room extends Widget {
         this.setupMarker(this.postMarker, 725, 320);
         this.postMarker.disable();
         this.postSpot.oninteract = item => this.onPostSpotInteract(item);
-        const messageBox = new MessageBox("Linver", "Good day, Artis@n! I have a great plan and I need", "a powerful weapon to accomplish it.", "Craft it quickly and quietly and I will buy it.");
-        messageBox.position.set(50, 335);
+        this.spawnQuestItems();
+    }
+    spawnQuestItems() {
+        for (let itemType of this.currentQuest.items) {
+            const item = this.createItem(itemType);
+            item.cartesianPosition = this.transformer.getRandomPosition();
+            item.position = this.transformer.toIsometric(item.cartesianPosition);
+            this.addItem(item);
+        }
+    }
+    get currentQuest() {
+        return this.quests[this.currentQuestId];
     }
     onTvSpotInteract(item) {
-        const apple = this.createItem(9);
-        this.addItem(apple);
+        if (this.tvMessage && this.tvMessage.tasks.length !== 0) {
+            return false;
+        }
+        if (!this.tvOpened) {
+            this.tvOpened = true;
+            this.movementBlocked = true;
+            this.tvMessage = new QuestMessageBox(this.currentQuest, this.questState);
+            this.tasks.add(this.slideInMessage(this.tvMessage));
+            this.addChild(this.tvMessage);
+            this.tvMessage.opacity = 0;
+        }
+        else {
+            this.tvMessage.tasks.add(this.slideOutMessage(this.tvMessage));
+        }
+        return false;
+    }
+    *slideInMessage(messageBox) {
+        messageBox.position = this.offScreen;
+        messageBox.opacity = 1;
+        yield Wait.task(this.messageMoveTask(messageBox, this.offScreen, this.onScreen));
+    }
+    *slideOutMessage(messageBox) {
+        yield Wait.task(this.messageMoveTask(messageBox, this.onScreen, this.offScreen));
+        this.removeChild(messageBox);
+        this.tvOpened = false;
+        this.movementBlocked = false;
+        if (this.questState === 0) {
+            this.questState = 1;
+            this.tvMarker.disable();
+        }
+        else if (this.questState === 2) {
+            this.questState = 3;
+            this.tvMarker.disable();
+            this.bedMarker.enable();
+        }
+    }
+    *messageMoveTask(messageBox, from, to) {
+        messageBox.position = from.clone();
+        for (let t of Task.linearMotion(0.25, from.y, to.y)) {
+            messageBox.y = t;
+            yield Wait.frame();
+        }
     }
     onBedSpotInteract(item) {
-        const apple = this.createItem(0);
+        const apple = this.createItem(20);
         this.addItem(apple);
+        return false;
     }
     onPostSpotInteract(item) {
-        const apple = this.createItem(16);
-        this.addItem(apple);
+        if (!item || !ItemFactory.isItemSpecial(item) || this.questState !== 1) {
+            return false;
+        }
+        this.tvMarker.enable();
+        this.questState = 2;
+        return true;
     }
     setupMarker(marker, x, y) {
         marker.start = new Vector2(x, y);
@@ -791,7 +1013,7 @@ class Room extends Widget {
     }
     updateCharacterPosition() {
         const controls = [47, 48, 45, 46];
-        const pressed = controls.filter(key => game.input.isKeyPressed(key));
+        const pressed = this.movementBlocked ? [] : controls.filter(key => game.input.isKeyPressed(key));
         let direction = Vector2.zero;
         for (let key of pressed) {
             direction = direction.add(this.getVelocityDirection(key));
@@ -816,9 +1038,9 @@ class Room extends Widget {
         this.player.position = this.transformer
             .moveInIsometric(this.player.position, this.transformer.toIsometric(this.playerPosition));
         this.playerPosition = this.transformer.toCartesian(this.player.position);
-        this.debug.text = `${this.toStringV2(this.playerPosition)} ${this.toStringV2(this.player.position)}`;
+        this.debug.text = `${Room.toStringV2(this.playerPosition)} ${Room.toStringV2(this.player.position)}`;
         if (this.mousePosition) {
-            this.debug.text += ` ${this.toStringV2(this.mousePosition)}  ${this
+            this.debug.text += ` ${Room.toStringV2(this.mousePosition)}  ${Room
                 .toStringV2(this.transformer.toCartesian(this.mousePosition))}`;
         }
     }
@@ -905,7 +1127,7 @@ class Room extends Widget {
             this.items.splice(index, 1);
         }
     }
-    toStringV2(vector) {
+    static toStringV2(vector) {
         return `${vector.x} ${vector.y}`;
     }
 }
@@ -976,6 +1198,16 @@ class MessageBox extends GuiFrame {
         game.setPixelFont(this.fontSize);
         super.render(renderer);
         renderer.restore();
+    }
+}
+class QuestMessageBox extends MessageBox {
+    constructor(quest, state) {
+        if (state === 2 || state === 3) {
+            super(quest.nickname, quest.debriefing[0], quest.debriefing[1], quest.debriefing[2]);
+        }
+        else {
+            super(quest.nickname, quest.briefing[0], quest.briefing[1], quest.briefing[2]);
+        }
     }
 }
 //# sourceMappingURL=app.js.map

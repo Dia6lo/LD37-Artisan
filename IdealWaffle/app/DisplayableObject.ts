@@ -1,7 +1,7 @@
 class DisplayableObject extends Widget {
     onpickup: () => void = () => { };
     onput: () => void = () => { };
-    oninteract: (item?: Item) => void = () => { };
+    oninteract: (item?: Item) => boolean = () => false;
     displayView: Widget;
     pickable = true;
 }
