@@ -388,7 +388,21 @@ class ItemFactory {
     }
 }
 ItemFactory.combos = [
-    { pair: { first: 4, second: 20 }, result: 16 }
+    { pair: { first: 17, second: 14 }, result: 9 },
+    { pair: { first: 6, second: 14 }, result: 1 },
+    { pair: { first: 17, second: 0 }, result: 7 },
+    { pair: { first: 4, second: 14 }, result: 21 },
+    { pair: { first: 11, second: 17 }, result: 22 },
+    { pair: { first: 11, second: 11 }, result: 12 },
+    { pair: { first: 11, second: 14 }, result: 10 },
+    { pair: { first: 0, second: 20 }, result: 8 },
+    { pair: { first: 4, second: 20 }, result: 16 },
+    { pair: { first: 3, second: 2 }, result: 19 },
+    { pair: { first: 2, second: 17 }, result: 13 },
+    { pair: { first: 6, second: 11 }, result: 5 },
+    { pair: { first: 6, second: 4 }, result: 18 },
+    { pair: { first: 4, second: 15 }, result: 24 },
+    { pair: { first: 6, second: 3 }, result: 23 }
 ];
 class ItemHand extends Widget {
     constructor(flipped) {
@@ -748,7 +762,8 @@ class Quest {
         return [
             {
                 items: [17, 14, 0, 6, 4],
-                nickname: "",
+                face: AssetBundle.boss,
+                nickname: "Crazyvan",
                 briefing: [
                     "Good day, Artis@n! I have a great plan and I need",
                     "a powerful weapon to accomplish it.",
@@ -762,8 +777,9 @@ class Quest {
                 newsLine: "A man with a {0} successfully robbed main bank of CyberGhoul."
             },
             {
-                items: [20, 0, 4],
-                nickname: "",
+                items: [17, 14, 11, 11],
+                face: AssetBundle.verySecretMan,
+                nickname: "FBI",
                 briefing: [
                     "Our agent was killed by a new {0}",
                     "weapon yesterday. We will pay for a prototype",
@@ -777,72 +793,77 @@ class Quest {
                 newsLine: "Government has increased funding for vision upgrades research. *** Taxes were increased by 15%"
             },
             {
-                items: [],
-                nickname: "",
+                items: [20, 0, 4, 15],
+                face: AssetBundle.folk,
+                nickname: "B1gM0ther",
                 briefing: [
-                    "",
-                    "",
+                    "I’ve heard that you can craft anything. I’ll give you",
+                    "my last money for a new energy source.",
+                    "P.S. Geez, new taxes are crazy!"
+                ],
+                debriefing: [
+                    "Thank goodness!",
+                    "Big thanks, my family can now run away from city.",
                     ""
+                ],
+                newsLine: "The number of CyberGhoul residents decreased by six today."
+            },
+            {
+                items: [17, 2, 3, 25],
+                face: AssetBundle.secretMan,
+                nickname: "Buggy",
+                briefing: [
+                    "Hello. Artis@n. My project’s deadline was yesterday,",
+                    "so I outsource you developing of movement system for",
+                    "brand new Cyberdog. Please, send it ASAP."
+                ],
+                debriefing: [
+                    "It works. Sometimes.",
+                    "Usually, I don't have a time for finding bugs.",
+                    "I appreciate your help."
+                ],
+                newsLine: "The new Cyberdogs will return escaped residents from dangerous wild to safety. *** Government decides to decrease taxes by 0.5% *** BREAKING NEWS: Cyberdogs have gone aggressive after release, avoid them at all costs!"
+            },
+            {
+                items: [2, 3, 6, 4, 11],
+                face: AssetBundle.western,
+                nickname: "Santafe",
+                briefing: [
+                    "Good day, mister Artis@n! My employees fail deadlines",
+                    "every time, so I want to replace them with AI systems.",
+                    "Can your genius help me?"
+                ],
+                debriefing: [
+                    "Hmm. You didn't receive my five last calls. I thought",
+                    "that you are dead. But I was wrong, sorry.",
+                    ""
+                ],
+                newsLine: "CyberSoft corporation has fired 90% of employees *** CyberSoft's share price has fell by 60% *** ATTENTION: City is not burning. Is is just a try-out of new fireworks. Please, stay inside your homes"
+            },
+            {
+                items: [3, 6, 4, 15],
+                face: AssetBundle.goverment,
+                nickname: "BOSSHERE",
+                briefing: [
+                    "Artis@n? We have really big problems - people assault",
+                    "the Government with {0}.",
+                    "Only miracle can help us. Just DO something."
                 ],
                 debriefing: [
                     "",
                     "",
                     ""
                 ],
-                newsLine: ""
+                newsLine: "Situation is under control. Chemical leak has been fixed. If you feel an aggression attacks drink a lot of water. *** Please stay away from sharp objects."
             },
             {
                 items: [],
-                nickname: "",
+                face: AssetBundle.hero,
+                nickname: "Artis@n",
                 briefing: [
-                    "",
-                    "",
-                    ""
-                ],
-                debriefing: [
-                    "",
-                    "",
-                    ""
-                ],
-                newsLine: ""
-            },
-            {
-                items: [],
-                nickname: "",
-                briefing: [
-                    "",
-                    "",
-                    ""
-                ],
-                debriefing: [
-                    "",
-                    "",
-                    ""
-                ],
-                newsLine: ""
-            },
-            {
-                items: [],
-                nickname: "",
-                briefing: [
-                    "",
-                    "",
-                    ""
-                ],
-                debriefing: [
-                    "",
-                    "",
-                    ""
-                ],
-                newsLine: ""
-            },
-            {
-                items: [],
-                nickname: "",
-                briefing: [
-                    "",
-                    "",
-                    ""
+                    "Good unending night, ghost. Can you leave the room?",
+                    "Do you have a shadow? Guess what? We are both dead.",
+                    "But I know a Genius that can craft a body for us ;)"
                 ],
                 debriefing: [
                     "",
@@ -1177,12 +1198,12 @@ class Spritesheet extends Widget {
 }
 Spritesheet.spriteIdAnimator = () => new NumberAnimator("spriteId");
 class Tooltip extends GuiFrame {
-    constructor(text) {
+    constructor(text, color = Game.neon) {
         super();
         this.nameLabel = new Label();
         this.nameLabel.text = text;
         this.nameLabel.pivot = Vector2.half;
-        this.nameLabel.fontColor = Game.neon;
+        this.nameLabel.fontColor = color;
         this.nameLabel.horizontalTextAlignment = TextAlignment.Center;
         this.nameLabel.verticalTextAlignment = TextAlignment.Center;
         this.pivot = Vector2.half;
@@ -1238,6 +1259,22 @@ class QuestMessageBox extends MessageBox {
         else {
             super(quest.nickname, f(quest.briefing[0]), f(quest.briefing[1]), f(quest.briefing[2]));
         }
+        this.faceFrame = new GuiFrame();
+        this.faceFrame.size.set(100, 118);
+        this.faceFrame.position.set(this.width - this.faceFrame.width - 25, -this.faceFrame.height + 5);
+        this.addChild(this.faceFrame);
+        const face = Sprite.fromImage(quest.face);
+        face.size = this.faceFrame.size;
+        face.position = this.faceFrame.position;
+        this.addChild(face);
+        this.nickName = new Tooltip(quest.nickname, Color.white);
+        this.addChild(this.nickName);
+    }
+    update(delta) {
+        super.update(delta);
+        this.nickName.position = this.faceFrame.position.add(this.nickName.size.divide(2));
+        this.nickName.y += this.faceFrame.height - 15;
+        this.nickName.x += (this.faceFrame.width - this.nickName.width) / 2;
     }
     static format(text) {
         return QuestMessageBox.weapon ? text.replace("{0}", QuestMessageBox.weapon.name).substr(0, 55) : text;

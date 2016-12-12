@@ -1,6 +1,20 @@
 class ItemFactory {
     private static combos: { pair: { first: ItemType; second: ItemType }; result: ItemType }[] = [
-        { pair: { first: ItemType.Cat, second: ItemType.Sandwich }, result: ItemType.Perpetual }
+        { pair: { first: ItemType.Pipe, second: ItemType.Lighter }, result: ItemType.FlameThrower },
+        { pair: { first: ItemType.Clock, second: ItemType.Lighter }, result: ItemType.Bomb },
+        { pair: { first: ItemType.Pipe, second: ItemType.Apple }, result: ItemType.Club },
+        { pair: { first: ItemType.Cat, second: ItemType.Lighter }, result: ItemType.Smoke },
+        { pair: { first: ItemType.Glass, second: ItemType.Pipe }, result: ItemType.Spyglass },
+        { pair: { first: ItemType.Glass, second: ItemType.Glass }, result: ItemType.Glasses },
+        { pair: { first: ItemType.Glass, second: ItemType.Lighter }, result: ItemType.Flashlight },
+        { pair: { first: ItemType.Apple, second: ItemType.Sandwich }, result: ItemType.Dinner },
+        { pair: { first: ItemType.Cat, second: ItemType.Sandwich }, result: ItemType.Perpetual },
+        { pair: { first: ItemType.Car, second: ItemType.Boot }, result: ItemType.Roller },
+        { pair: { first: ItemType.Boot, second: ItemType.Pipe }, result: ItemType.Leg },
+        { pair: { first: ItemType.Clock, second: ItemType.Glass }, result: ItemType.Chip },
+        { pair: { first: ItemType.Clock, second: ItemType.Cat }, result: ItemType.Robot },
+        { pair: { first: ItemType.Cat, second: ItemType.Pen }, result: ItemType.Unicorn },
+        { pair: { first: ItemType.Clock, second: ItemType.Car }, result: ItemType.TimeMachine }
     ];
 
     static isItemSpecial(item: Item) {
