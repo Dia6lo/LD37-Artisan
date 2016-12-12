@@ -22,7 +22,7 @@ class Quest {
                     "Looks strange, but I’ve heard about your craftstyle.",
                     "But if it's a fake, I will FIND YOU.",
                     "                                             Cheers."],
-                newsLine: "A man with a {0} successfully robbed main bank of CyberGhoul."
+                newsLine: "A man with a {0} robbed main bank of CyberGhoul last night. If you know any information about criminal - call police immediately."
             },
             {
                 items: [ItemType.Pipe, ItemType.Lighter, ItemType.Glass, ItemType.Glass],

@@ -12,6 +12,10 @@ class Tooltip extends GuiFrame {
         this.addChild(this.nameLabel);
     }
 
+    set text(value: string) {
+        this.nameLabel.text = value;
+    }
+
     beforeRender(renderer: Renderer): void {
         super.beforeRender(renderer);
         renderer.save();
@@ -64,13 +68,13 @@ class QuestMessageBox extends MessageBox {
     private readonly nickName: Tooltip;
     private readonly faceFrame: GuiFrame;
 
-    constructor(quest: Quest, state: QuestState, item?: Item) {
+    constructor(quest: Quest, state: QuestState) {
         const f = QuestMessageBox.format;
-        if (state === QuestState.Debriefing || state === QuestState.Sleep) {
-            super(quest.nickname, f(quest.debriefing[0]), f(quest.debriefing[1]), f(quest.debriefing[2]));
+        if (state === QuestState.Briefing || state === QuestState.Craft) {
+            super(quest.nickname, f(quest.briefing[0]), f(quest.briefing[1]), f(quest.briefing[2]));
         }
         else {
-            super(quest.nickname, f(quest.briefing[0]), f(quest.briefing[1]), f(quest.briefing[2]));
+            super(quest.nickname, f(quest.debriefing[0]), f(quest.debriefing[1]), f(quest.debriefing[2]));
         }
         this.faceFrame = new GuiFrame();
         this.faceFrame.size.set(100, 118);

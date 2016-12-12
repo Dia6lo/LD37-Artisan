@@ -11,19 +11,24 @@ class Room extends Widget {
     private items: Item[] = [];
     private roomObjects = new Widget();
     private tvMarker = new Marker();
-    private tvSpot = new SpecialSpot(Texture.fromImage(AssetBundle.watchTv), "Read last messages");
+    private tvSpot = new SpecialSpot(Texture.fromImage(AssetBundle.watchTv), "Read last message");
     private bedMarker = new Marker();
     private bedSpot = new SpecialSpot(Texture.fromImage(AssetBundle.sleep), "Go to bed");
     private postMarker = new Marker();
     private postSpot = new SpecialSpot(Texture.fromImage(AssetBundle.send), "Send requested item");
     private quests = Quest.createStory();
-    private currentQuestId = 0;
+    private currentQuestId = 5;
     private questState = QuestState.Briefing;
     private movementBlocked = false;
     private tvOpened = false;
     private tvMessage: MessageBox;
+    private messageLayer = new Widget();
     private readonly fadeScreen = new FadeScreen(new Vector2(886, 554));
     private questItems: Item[] = [];
+    private tips: string[] = [];
+    private tip = new Tooltip("");
+    private news: string[] = [];
+    private newsLine = new Label();
 
     constructor() {
         super();
@@ -49,10 +54,9 @@ class Room extends Widget {
         };
         this.debug.fontColor = Color.white;
         //this.addChild(this.debug);
-        //const newsLabel = new Label("tention: You must stay in your houses *** Want to enlarge your self-esteem?");
-        //newsLabel.fontColor = Color.fromComponents(41, 196, 191);
-        //newsLabel.position.set(-10, 505);
-        //this.addChild(newsLabel);
+        this.newsLine.fontColor = Color.fromComponents(41, 196, 191);
+        this.newsLine.position.set(900, 505);
+        this.addChild(this.newsLine);
         this.setupMarker(this.tvMarker, 268, 145);
         this.tvSpot.oninteract = item => this.onTvSpotInteract(item);
         this.setupMarker(this.bedMarker, 165, 305);
@@ -62,9 +66,71 @@ class Room extends Widget {
         this.postMarker.disable();
         this.postSpot.oninteract = item => this.onPostSpotInteract(item);
         this.spawnQuestItems();
+        this.addChild(this.messageLayer);
         this.addChild(this.fadeScreen);
         assets.loaded.subscribe(this.onAssetsLoaded, this);
         this.itemHandPanel.frozen = true;
+        this.tip.pivot = Vector2.half;
+        this.tip.position.set(450, 650);
+        this.addChild(this.tip);
+        this.tasks.add(this.showTipTask());
+        this.tasks.add(this.showNewsTask());
+    }
+
+    addTip(tip: string) {
+        if (this.tips.filter(t => t === tip).length === 0) {
+            this.tips.unshift(tip);
+        }
+    }
+
+    private *showTipTask() {
+        while (true) {
+            const tip = this.tips.pop();
+            if (tip) {
+                this.tip.text = tip;
+                for (let t of Task.sineMotion(0.5, 650, 450)) {
+                    this.tip.y = t;
+                    yield Wait.frame();
+                }
+                yield Wait.seconds(1);
+                for (let t of Task.sineMotion(0.5, 450, 650)) {
+                    this.tip.y = t;
+                    yield Wait.frame();
+                }
+            }
+            yield Wait.frame();
+        }
+    }
+
+    addNews(news: string) {
+        this.news.unshift(news);
+    }
+
+    private *showNewsTask() {
+        while (true) {
+            const news = this.news.pop();
+            if (news) {
+                this.newsLine.text = news;
+                const renderer = game.renderer;
+                renderer.save();
+                game.setPixelFont(32);
+                const width = renderer.measureText(news);
+                renderer.restore();
+                const start = 900;
+                for (let t of Task.linearMotion(width / 75 + 1, start, -width - 50)) {
+                    this.newsLine.x = t;
+                    yield Wait.frame();
+                }
+            }
+            yield Wait.frame();
+        }
+    }
+
+    render(renderer: Renderer): void {
+        renderer.save();
+        game.setPixelFont(32);
+        super.render(renderer);
+        renderer.restore();
     }
 
     private onAssetsLoaded(): void {
@@ -87,6 +153,11 @@ class Room extends Widget {
 
     private onTvSpotInteract(item?: Item) {
         if (this.tvMessage && this.tvMessage.tasks.length !== 0) {
+            this.addTip("No messages.");
+            return false;
+        }
+        if (this.currentQuestId === 5 &&
+            (this.questState === QuestState.Debriefing || this.questState === QuestState.Sleep)) {
             return false;
         }
         if (!this.tvOpened) {
@@ -94,11 +165,16 @@ class Room extends Widget {
             this.movementBlocked = true;
             this.tvMessage = new QuestMessageBox(this.currentQuest, this.questState);
             this.tasks.add(this.slideInMessage(this.tvMessage));
-            this.addChild(this.tvMessage);
+            this.messageLayer.addChild(this.tvMessage);
             this.tvMessage.opacity = 0;
         }
         else {
-
+            if (this.currentQuestId === 6) {
+                this.itemHandPanel.frozen = true;
+                this.fadeScreen.setupEnding();
+                this.fadeScreen.fadeIn();
+                return false;
+            }
             this.tvMessage.tasks.add(this.slideOutMessage(this.tvMessage));
         }
         return false;
@@ -115,7 +191,7 @@ class Room extends Widget {
 
     private *slideOutMessage(messageBox: MessageBox) {
         yield Wait.task(this.messageMoveTask(messageBox, this.onScreen, this.offScreen));
-        this.removeChild(messageBox);
+        this.messageLayer.removeChild(messageBox);
         this.tvOpened = false;
         this.movementBlocked = false;
         if (this.questState === QuestState.Briefing) {
@@ -139,6 +215,7 @@ class Room extends Widget {
 
     private onBedSpotInteract(item?: Item) {
         if (this.questState !== QuestState.Sleep) {
+            this.addTip("I don't want to sleep yet.");
             return false;
         }
         this.tasks.add(this.sleepTask());
@@ -151,6 +228,10 @@ class Room extends Widget {
         this.fadeScreen.text = "Sleeping";
         this.fadeScreen.fadeIn();
         yield Wait.seconds(0.5);
+        let newsLine = this.currentQuest.newsLine;
+        const weapon = QuestMessageBox.weapon;
+        newsLine = weapon ? newsLine.replace("{0}", weapon!.name) : newsLine;
+        this.addNews(newsLine);
         this.currentQuestId++;
         this.questState = QuestState.Briefing;
         this.bedMarker.disable();
@@ -164,16 +245,34 @@ class Room extends Widget {
     }
 
     private onPostSpotInteract(item?: Item) {
-        if (!item || !ItemFactory.isItemSpecial(item) || this.questState !== QuestState.Craft) {
+        if (this.questState !== QuestState.Craft) {
+            this.addTip("No one needs my service now.");
             return false;
         }
-        this.postMarker.disable();
-        this.tvMarker.enable();
+        if (!item) {
+            this.addTip("I need to send something.");
+            return false;
+        }
+        if (!ItemFactory.isItemSpecial(item)) {
+            this.addTip("This item is too simple.");
+            return false;
+        }
         if (this.currentQuestId === 0) {
             QuestMessageBox.weapon = item;
         }
+        if (this.currentQuestId === 5) {
+            this.postMarker.disable();
+            this.bedMarker.enable();
+            this.questState = QuestState.Sleep;
+            this.addNews("          ");
+            this.addNews("Situation is under control. Chemical leak has been fixed *** If you feel an aggression attacks - drink a lot of water. *** Please stay away from sharp objects.");
+        }
+        else {
+            this.postMarker.disable();
+            this.tvMarker.enable();
+            this.questState = QuestState.Debriefing;
+        }
         this.questItems.push(item);
-        this.questState = QuestState.Debriefing;
         return true;
     }
 

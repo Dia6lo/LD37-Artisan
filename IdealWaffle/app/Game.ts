@@ -1,6 +1,6 @@
 ﻿class Game extends Application {
     static readonly neon = Color.fromComponents(41, 196, 191);
-    private readonly room: Room;
+    readonly room: Room;
 
     constructor() {
         super(886, 554);

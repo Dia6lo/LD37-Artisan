@@ -806,7 +806,7 @@ class Quest {
                     "But if it's a fake, I will FIND YOU.",
                     "                                             Cheers."
                 ],
-                newsLine: "A man with a {0} successfully robbed main bank of CyberGhoul."
+                newsLine: "A man with a {0} robbed main bank of CyberGhoul last night. If you know any information about criminal - call police immediately."
             },
             {
                 items: [17, 14, 11, 11],
@@ -920,18 +920,23 @@ class Room extends Widget {
         this.items = [];
         this.roomObjects = new Widget();
         this.tvMarker = new Marker();
-        this.tvSpot = new SpecialSpot(Texture.fromImage(AssetBundle.watchTv), "Read last messages");
+        this.tvSpot = new SpecialSpot(Texture.fromImage(AssetBundle.watchTv), "Read last message");
         this.bedMarker = new Marker();
         this.bedSpot = new SpecialSpot(Texture.fromImage(AssetBundle.sleep), "Go to bed");
         this.postMarker = new Marker();
         this.postSpot = new SpecialSpot(Texture.fromImage(AssetBundle.send), "Send requested item");
         this.quests = Quest.createStory();
-        this.currentQuestId = 0;
+        this.currentQuestId = 5;
         this.questState = 0;
         this.movementBlocked = false;
         this.tvOpened = false;
+        this.messageLayer = new Widget();
         this.fadeScreen = new FadeScreen(new Vector2(886, 554));
         this.questItems = [];
+        this.tips = [];
+        this.tip = new Tooltip("");
+        this.news = [];
+        this.newsLine = new Label();
         this.onScreen = new Vector2(50, 335);
         this.offScreen = new Vector2(50, 600);
         this.itemHandPanel = new ItemHandPanel(this);
@@ -955,6 +960,9 @@ class Room extends Widget {
             this.mousePosition = new Vector2(ev.x - game.renderer.view.offsetLeft, ev.y - game.renderer.view.offsetTop);
         };
         this.debug.fontColor = Color.white;
+        this.newsLine.fontColor = Color.fromComponents(41, 196, 191);
+        this.newsLine.position.set(900, 505);
+        this.addChild(this.newsLine);
         this.setupMarker(this.tvMarker, 268, 145);
         this.tvSpot.oninteract = item => this.onTvSpotInteract(item);
         this.setupMarker(this.bedMarker, 165, 305);
@@ -964,9 +972,66 @@ class Room extends Widget {
         this.postMarker.disable();
         this.postSpot.oninteract = item => this.onPostSpotInteract(item);
         this.spawnQuestItems();
+        this.addChild(this.messageLayer);
         this.addChild(this.fadeScreen);
         assets.loaded.subscribe(this.onAssetsLoaded, this);
         this.itemHandPanel.frozen = true;
+        this.tip.pivot = Vector2.half;
+        this.tip.position.set(450, 650);
+        this.addChild(this.tip);
+        this.tasks.add(this.showTipTask());
+        this.tasks.add(this.showNewsTask());
+    }
+    addTip(tip) {
+        if (this.tips.filter(t => t === tip).length === 0) {
+            this.tips.unshift(tip);
+        }
+    }
+    *showTipTask() {
+        while (true) {
+            const tip = this.tips.pop();
+            if (tip) {
+                this.tip.text = tip;
+                for (let t of Task.sineMotion(0.5, 650, 450)) {
+                    this.tip.y = t;
+                    yield Wait.frame();
+                }
+                yield Wait.seconds(1);
+                for (let t of Task.sineMotion(0.5, 450, 650)) {
+                    this.tip.y = t;
+                    yield Wait.frame();
+                }
+            }
+            yield Wait.frame();
+        }
+    }
+    addNews(news) {
+        this.news.unshift(news);
+    }
+    *showNewsTask() {
+        while (true) {
+            const news = this.news.pop();
+            if (news) {
+                this.newsLine.text = news;
+                const renderer = game.renderer;
+                renderer.save();
+                game.setPixelFont(32);
+                const width = renderer.measureText(news);
+                renderer.restore();
+                const start = 900;
+                for (let t of Task.linearMotion(width / 75 + 1, start, -width - 50)) {
+                    this.newsLine.x = t;
+                    yield Wait.frame();
+                }
+            }
+            yield Wait.frame();
+        }
+    }
+    render(renderer) {
+        renderer.save();
+        game.setPixelFont(32);
+        super.render(renderer);
+        renderer.restore();
     }
     onAssetsLoaded() {
         this.fadeScreen.fadeOut();
@@ -985,6 +1050,11 @@ class Room extends Widget {
     }
     onTvSpotInteract(item) {
         if (this.tvMessage && this.tvMessage.tasks.length !== 0) {
+            this.addTip("No messages.");
+            return false;
+        }
+        if (this.currentQuestId === 5 &&
+            (this.questState === 2 || this.questState === 3)) {
             return false;
         }
         if (!this.tvOpened) {
@@ -992,10 +1062,16 @@ class Room extends Widget {
             this.movementBlocked = true;
             this.tvMessage = new QuestMessageBox(this.currentQuest, this.questState);
             this.tasks.add(this.slideInMessage(this.tvMessage));
-            this.addChild(this.tvMessage);
+            this.messageLayer.addChild(this.tvMessage);
             this.tvMessage.opacity = 0;
         }
         else {
+            if (this.currentQuestId === 6) {
+                this.itemHandPanel.frozen = true;
+                this.fadeScreen.setupEnding();
+                this.fadeScreen.fadeIn();
+                return false;
+            }
             this.tvMessage.tasks.add(this.slideOutMessage(this.tvMessage));
         }
         return false;
@@ -1007,7 +1083,7 @@ class Room extends Widget {
     }
     *slideOutMessage(messageBox) {
         yield Wait.task(this.messageMoveTask(messageBox, this.onScreen, this.offScreen));
-        this.removeChild(messageBox);
+        this.messageLayer.removeChild(messageBox);
         this.tvOpened = false;
         this.movementBlocked = false;
         if (this.questState === 0) {
@@ -1029,6 +1105,7 @@ class Room extends Widget {
     }
     onBedSpotInteract(item) {
         if (this.questState !== 3) {
+            this.addTip("I don't want to sleep yet.");
             return false;
         }
         this.tasks.add(this.sleepTask());
@@ -1040,6 +1117,10 @@ class Room extends Widget {
         this.fadeScreen.text = "Sleeping";
         this.fadeScreen.fadeIn();
         yield Wait.seconds(0.5);
+        let newsLine = this.currentQuest.newsLine;
+        const weapon = QuestMessageBox.weapon;
+        newsLine = weapon ? newsLine.replace("{0}", weapon.name) : newsLine;
+        this.addNews(newsLine);
         this.currentQuestId++;
         this.questState = 0;
         this.bedMarker.disable();
@@ -1052,16 +1133,34 @@ class Room extends Widget {
         this.itemHandPanel.frozen = false;
     }
     onPostSpotInteract(item) {
-        if (!item || !ItemFactory.isItemSpecial(item) || this.questState !== 1) {
+        if (this.questState !== 1) {
+            this.addTip("No one needs my service now.");
             return false;
         }
-        this.postMarker.disable();
-        this.tvMarker.enable();
+        if (!item) {
+            this.addTip("I need to send something.");
+            return false;
+        }
+        if (!ItemFactory.isItemSpecial(item)) {
+            this.addTip("This item is too simple.");
+            return false;
+        }
         if (this.currentQuestId === 0) {
             QuestMessageBox.weapon = item;
         }
+        if (this.currentQuestId === 5) {
+            this.postMarker.disable();
+            this.bedMarker.enable();
+            this.questState = 3;
+            this.addNews("          ");
+            this.addNews("Situation is under control. Chemical leak has been fixed *** If you feel an aggression attacks - drink a lot of water. *** Please stay away from sharp objects.");
+        }
+        else {
+            this.postMarker.disable();
+            this.tvMarker.enable();
+            this.questState = 2;
+        }
         this.questItems.push(item);
-        this.questState = 2;
         return true;
     }
     setupMarker(marker, x, y) {
@@ -1259,6 +1358,9 @@ class Tooltip extends GuiFrame {
         this.pivot = Vector2.half;
         this.addChild(this.nameLabel);
     }
+    set text(value) {
+        this.nameLabel.text = value;
+    }
     beforeRender(renderer) {
         super.beforeRender(renderer);
         renderer.save();
@@ -1301,13 +1403,13 @@ class MessageBox extends GuiFrame {
     }
 }
 class QuestMessageBox extends MessageBox {
-    constructor(quest, state, item) {
+    constructor(quest, state) {
         const f = QuestMessageBox.format;
-        if (state === 2 || state === 3) {
-            super(quest.nickname, f(quest.debriefing[0]), f(quest.debriefing[1]), f(quest.debriefing[2]));
+        if (state === 0 || state === 1) {
+            super(quest.nickname, f(quest.briefing[0]), f(quest.briefing[1]), f(quest.briefing[2]));
         }
         else {
-            super(quest.nickname, f(quest.briefing[0]), f(quest.briefing[1]), f(quest.briefing[2]));
+            super(quest.nickname, f(quest.debriefing[0]), f(quest.debriefing[1]), f(quest.debriefing[2]));
         }
         this.faceFrame = new GuiFrame();
         this.faceFrame.size.set(100, 118);
