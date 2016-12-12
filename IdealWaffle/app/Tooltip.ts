@@ -60,21 +60,19 @@ class MessageBox extends GuiFrame {
 }
 
 class QuestMessageBox extends MessageBox {
-    private readonly item?: Item;
+    static weapon: Item;
 
     constructor(quest: Quest, state: QuestState, item?: Item) {
+        const f = QuestMessageBox.format;
         if (state === QuestState.Debriefing || state === QuestState.Sleep) {
-            super(quest.nickname, quest.debriefing[0], quest.debriefing[1], quest.debriefing[2]);
+            super(quest.nickname, f(quest.debriefing[0]), f(quest.debriefing[1]), f(quest.debriefing[2]));
         }
         else {
-            super(quest.nickname, quest.briefing[0], quest.briefing[1], quest.briefing[2]);
+            super(quest.nickname, f(quest.briefing[0]), f(quest.briefing[1]), f(quest.briefing[2]));
         }
-        this.item = item;
     }
 
-    private format(text: string) {
-        if (this.item)
-            return text.replace("{0}", this.item!.name);
-
+    private static format(text: string) {
+        return QuestMessageBox.weapon ? text.replace("{0}", QuestMessageBox.weapon!.name).substr(0, 55) : text;
     }
 }

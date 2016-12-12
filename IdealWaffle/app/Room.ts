@@ -163,6 +163,9 @@ class Room extends Widget {
             return false;
         }
         this.tvMarker.enable();
+        if (this.currentQuestId === 0) {
+            QuestMessageBox.weapon = item;
+        }
         this.questItems.push(item);
         this.questState = QuestState.Debriefing;
         return true;

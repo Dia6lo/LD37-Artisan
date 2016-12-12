@@ -999,6 +999,9 @@ class Room extends Widget {
             return false;
         }
         this.tvMarker.enable();
+        if (this.currentQuestId === 0) {
+            QuestMessageBox.weapon = item;
+        }
         this.questItems.push(item);
         this.questState = 2;
         return true;
@@ -1228,17 +1231,16 @@ class MessageBox extends GuiFrame {
 }
 class QuestMessageBox extends MessageBox {
     constructor(quest, state, item) {
+        const f = QuestMessageBox.format;
         if (state === 2 || state === 3) {
-            super(quest.nickname, quest.debriefing[0], quest.debriefing[1], quest.debriefing[2]);
+            super(quest.nickname, f(quest.debriefing[0]), f(quest.debriefing[1]), f(quest.debriefing[2]));
         }
         else {
-            super(quest.nickname, quest.briefing[0], quest.briefing[1], quest.briefing[2]);
+            super(quest.nickname, f(quest.briefing[0]), f(quest.briefing[1]), f(quest.briefing[2]));
         }
-        this.item = item;
     }
-    format(text) {
-        if (this.item)
-            return text.replace("{0}", this.item.name);
+    static format(text) {
+        return QuestMessageBox.weapon ? text.replace("{0}", QuestMessageBox.weapon.name).substr(0, 55) : text;
     }
 }
 //# sourceMappingURL=app.js.map
