@@ -152,6 +152,9 @@ class SpecialSpot extends DisplayableObject {
         sprite.pivot = Vector2.half;
         this.displayView = new PanelObjectView(sprite, tooltip, false);
     }
+    set text(value) {
+        this.displayView.text = value;
+    }
 }
 class SimpleItem extends DisplayableObject {
     constructor(texture, name) {
@@ -314,9 +317,12 @@ class PanelObjectView extends Widget {
         sprite.pivot = Vector2.half;
         sprite.position = this.size.divide(2).add(new Vector2(0, 5));
         this.addChild(sprite);
-        const tooltip = new Tooltip(text);
-        tooltip.position = this.size.divide(2).add(new Vector2(0, textAbove ? -sprite.height : sprite.height * 1.25));
-        this.addChild(tooltip);
+        this.tooltip = new Tooltip(text);
+        this.tooltip.position = this.size.divide(2).add(new Vector2(0, textAbove ? -sprite.height : sprite.height * 1.25));
+        this.addChild(this.tooltip);
+    }
+    set text(value) {
+        this.tooltip.text = value;
     }
 }
 class HandItemView extends PanelObjectView {
@@ -1050,11 +1056,11 @@ class Room extends Widget {
     }
     onTvSpotInteract(item) {
         if (this.tvMessage && this.tvMessage.tasks.length !== 0) {
-            this.addTip("No messages.");
             return false;
         }
         if (this.currentQuestId === 5 &&
             (this.questState === 2 || this.questState === 3)) {
+            this.addTip("No messages.");
             return false;
         }
         if (!this.tvOpened) {
@@ -1080,6 +1086,7 @@ class Room extends Widget {
         messageBox.position = this.offScreen;
         messageBox.opacity = 1;
         yield Wait.task(this.messageMoveTask(messageBox, this.offScreen, this.onScreen));
+        this.tvSpot.text = "Close terminal";
     }
     *slideOutMessage(messageBox) {
         yield Wait.task(this.messageMoveTask(messageBox, this.onScreen, this.offScreen));
@@ -1095,6 +1102,7 @@ class Room extends Widget {
             this.tvMarker.disable();
             this.bedMarker.enable();
         }
+        this.tvSpot.text = "Read last message";
     }
     *messageMoveTask(messageBox, from, to) {
         messageBox.position = from.clone();

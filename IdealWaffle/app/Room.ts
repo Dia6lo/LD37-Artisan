@@ -153,11 +153,11 @@ class Room extends Widget {
 
     private onTvSpotInteract(item?: Item) {
         if (this.tvMessage && this.tvMessage.tasks.length !== 0) {
-            this.addTip("No messages.");
             return false;
         }
         if (this.currentQuestId === 5 &&
             (this.questState === QuestState.Debriefing || this.questState === QuestState.Sleep)) {
+            this.addTip("No messages.");
             return false;
         }
         if (!this.tvOpened) {
@@ -187,6 +187,7 @@ class Room extends Widget {
         messageBox.position = this.offScreen;
         messageBox.opacity = 1;
         yield Wait.task(this.messageMoveTask(messageBox, this.offScreen, this.onScreen));
+        this.tvSpot.text = "Close terminal";
     }
 
     private *slideOutMessage(messageBox: MessageBox) {
@@ -203,6 +204,7 @@ class Room extends Widget {
             this.tvMarker.disable();
             this.bedMarker.enable();
         }
+        this.tvSpot.text = "Read last message";
     }
 
     private *messageMoveTask(messageBox: MessageBox, from: Vector2, to: Vector2) {

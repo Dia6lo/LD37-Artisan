@@ -16,6 +16,10 @@ class SpecialSpot extends DisplayableObject {
         sprite.pivot = Vector2.half;
         this.displayView = new PanelObjectView(sprite, tooltip, false);
     }
+
+    set text(value: string) {
+        this.displayView.text = value;
+    }
 }
 
 interface Item extends DisplayableObject {
