@@ -30,11 +30,11 @@ class SimpleItem extends DisplayableObject implements Item {
     cartesianPosition = new Vector2(50, 50);
     type: ItemType;
 
-    constructor(texture: Texture, size: Vector2, name: string) {
+    constructor(texture: Texture, name: string) {
         super();
         this.image.texture = texture;
         this.image.pivot = new Vector2(0.5, 1);
-        this.image.size = size;
+        this.image.size = new Vector2(32, 32);
         this.addChild(this.image);
         this.name = name;
         this.displayView = new HandItemView(this);

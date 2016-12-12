@@ -2,7 +2,6 @@ class AssetBundle {
     constructor() {
         this.loadedHost = ObservableEventHost.create();
         this.imageUrls = [
-            AssetBundle.apple,
             AssetBundle.room,
             AssetBundle.town,
             AssetBundle.light,
@@ -14,7 +13,32 @@ class AssetBundle {
             AssetBundle.marker,
             AssetBundle.watchTv,
             AssetBundle.sleep,
-            AssetBundle.send
+            AssetBundle.send,
+            AssetBundle.apple,
+            AssetBundle.bomb,
+            AssetBundle.boot,
+            AssetBundle.car,
+            AssetBundle.cat,
+            AssetBundle.chip,
+            AssetBundle.clock,
+            AssetBundle.club,
+            AssetBundle.dinner,
+            AssetBundle.flameThrower,
+            AssetBundle.flashlight,
+            AssetBundle.glass,
+            AssetBundle.glasses,
+            AssetBundle.leg,
+            AssetBundle.lighter,
+            AssetBundle.pen,
+            AssetBundle.perpetual,
+            AssetBundle.pipe,
+            AssetBundle.robot,
+            AssetBundle.roller,
+            AssetBundle.sandwich,
+            AssetBundle.smoke,
+            AssetBundle.spyglass,
+            AssetBundle.timeMachine,
+            AssetBundle.unicorn
         ];
     }
     get loaded() {
@@ -23,6 +47,9 @@ class AssetBundle {
     ;
     static createPath(file) {
         return `${this.assetFolder}/${file}`;
+    }
+    static createItemPath(file) {
+        return `${this.assetFolder}/items/${file}`;
     }
     load() {
         let imagesLoaded = 0;
@@ -40,7 +67,6 @@ class AssetBundle {
     }
 }
 AssetBundle.assetFolder = "assets";
-AssetBundle.apple = AssetBundle.createPath("Apple.png");
 AssetBundle.room = AssetBundle.createPath("Room.png");
 AssetBundle.town = AssetBundle.createPath("Town.png");
 AssetBundle.light = AssetBundle.createPath("Light.png");
@@ -53,6 +79,31 @@ AssetBundle.marker = AssetBundle.createPath("Marker.png");
 AssetBundle.watchTv = AssetBundle.createPath("WatchTV.png");
 AssetBundle.sleep = AssetBundle.createPath("Sleep.png");
 AssetBundle.send = AssetBundle.createPath("Send.png");
+AssetBundle.apple = AssetBundle.createItemPath("Apple.png");
+AssetBundle.bomb = AssetBundle.createItemPath("Bomb.png");
+AssetBundle.boot = AssetBundle.createItemPath("Boot.png");
+AssetBundle.car = AssetBundle.createItemPath("Car.png");
+AssetBundle.cat = AssetBundle.createItemPath("Cat.png");
+AssetBundle.chip = AssetBundle.createItemPath("Chip.png");
+AssetBundle.clock = AssetBundle.createItemPath("Clock.png");
+AssetBundle.club = AssetBundle.createItemPath("Club.png");
+AssetBundle.dinner = AssetBundle.createItemPath("Dinner.png");
+AssetBundle.flameThrower = AssetBundle.createItemPath("FlameThrower.png");
+AssetBundle.flashlight = AssetBundle.createItemPath("Flashlight.png");
+AssetBundle.glass = AssetBundle.createItemPath("Glass.png");
+AssetBundle.glasses = AssetBundle.createItemPath("Glasses.png");
+AssetBundle.leg = AssetBundle.createItemPath("Leg.png");
+AssetBundle.lighter = AssetBundle.createItemPath("Lighter.png");
+AssetBundle.pen = AssetBundle.createItemPath("Pen.png");
+AssetBundle.perpetual = AssetBundle.createItemPath("Perpetual.png");
+AssetBundle.pipe = AssetBundle.createItemPath("Pipe.png");
+AssetBundle.robot = AssetBundle.createItemPath("Robot.png");
+AssetBundle.roller = AssetBundle.createItemPath("Roller.png");
+AssetBundle.sandwich = AssetBundle.createItemPath("Sandwich.png");
+AssetBundle.smoke = AssetBundle.createItemPath("Smoke.png");
+AssetBundle.spyglass = AssetBundle.createItemPath("Spyglass.png");
+AssetBundle.timeMachine = AssetBundle.createItemPath("TimeMachine.png");
+AssetBundle.unicorn = AssetBundle.createItemPath("Unicorn.png");
 class CityParallax extends Widget {
     constructor() {
         super();
@@ -87,13 +138,13 @@ class SpecialSpot extends DisplayableObject {
     }
 }
 class SimpleItem extends DisplayableObject {
-    constructor(texture, size, name) {
+    constructor(texture, name) {
         super();
         this.image = new Sprite();
         this.cartesianPosition = new Vector2(50, 50);
         this.image.texture = texture;
         this.image.pivot = new Vector2(0.5, 1);
-        this.image.size = size;
+        this.image.size = new Vector2(32, 32);
         this.addChild(this.image);
         this.name = name;
         this.displayView = new HandItemView(this);
@@ -223,10 +274,61 @@ class ItemFactory {
     static getItemObject(type) {
         switch (type) {
             case 0:
-                return new SimpleItem(Texture.fromImage(AssetBundle.apple), new Vector2(32, 32), "Apple");
+                return this.constructItem(AssetBundle.apple, "Apple");
+            case 1:
+                return this.constructItem(AssetBundle.bomb, "Bomb");
+            case 2:
+                return this.constructItem(AssetBundle.boot, "Boot");
+            case 3:
+                return this.constructItem(AssetBundle.car, "Car");
+            case 4:
+                return this.constructItem(AssetBundle.cat, "Cat");
+            case 5:
+                return this.constructItem(AssetBundle.chip, "Chip");
+            case 6:
+                return this.constructItem(AssetBundle.clock, "Clock");
+            case 7:
+                return this.constructItem(AssetBundle.club, "Club");
+            case 8:
+                return this.constructItem(AssetBundle.dinner, "Dinner");
+            case 9:
+                return this.constructItem(AssetBundle.flameThrower, "FlameThrower");
+            case 10:
+                return this.constructItem(AssetBundle.flashlight, "Flashlight");
+            case 11:
+                return this.constructItem(AssetBundle.glass, "Glass");
+            case 12:
+                return this.constructItem(AssetBundle.glasses, "Glasses");
+            case 13:
+                return this.constructItem(AssetBundle.leg, "Leg");
+            case 14:
+                return this.constructItem(AssetBundle.lighter, "Lighter");
+            case 15:
+                return this.constructItem(AssetBundle.pen, "Pen");
+            case 16:
+                return this.constructItem(AssetBundle.perpetual, "Perpetual");
+            case 17:
+                return this.constructItem(AssetBundle.pipe, "Pipe");
+            case 18:
+                return this.constructItem(AssetBundle.robot, "Robot");
+            case 19:
+                return this.constructItem(AssetBundle.roller, "Roller");
+            case 20:
+                return this.constructItem(AssetBundle.sandwich, "Sandwich");
+            case 21:
+                return this.constructItem(AssetBundle.smoke, "Smoke");
+            case 22:
+                return this.constructItem(AssetBundle.spyglass, "Spyglass");
+            case 23:
+                return this.constructItem(AssetBundle.timeMachine, "TimeMachine");
+            case 24:
+                return this.constructItem(AssetBundle.unicorn, "Unicorn");
             default:
                 throw "Error creating item";
         }
+    }
+    static constructItem(path, tooltip) {
+        return new SimpleItem(Texture.fromImage(path), tooltip);
     }
 }
 ItemFactory.combos = [];
@@ -640,10 +742,9 @@ class Room extends Widget {
         this.postSpot.oninteract = item => this.onPostSpotInteract(item);
         const messageBox = new MessageBox("Linver", "Good day, Artis@n! I have a great plan and I need", "a powerful weapon to accomplish it.", "Craft it quickly and quietly and I will buy it.");
         messageBox.position.set(50, 335);
-        this.addChild(messageBox);
     }
     onTvSpotInteract(item) {
-        const apple = this.createItem(0);
+        const apple = this.createItem(9);
         this.addItem(apple);
     }
     onBedSpotInteract(item) {
@@ -651,7 +752,7 @@ class Room extends Widget {
         this.addItem(apple);
     }
     onPostSpotInteract(item) {
-        const apple = this.createItem(0);
+        const apple = this.createItem(16);
         this.addItem(apple);
     }
     setupMarker(marker, x, y) {

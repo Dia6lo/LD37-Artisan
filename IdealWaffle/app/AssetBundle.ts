@@ -5,7 +5,6 @@ class AssetBundle {
     };
 
     private static readonly assetFolder = "assets";
-    static readonly apple = AssetBundle.createPath("Apple.png");
     static readonly room = AssetBundle.createPath("Room.png");
     static readonly town = AssetBundle.createPath("Town.png");
     static readonly light = AssetBundle.createPath("Light.png");
@@ -18,8 +17,36 @@ class AssetBundle {
     static readonly watchTv = AssetBundle.createPath("WatchTV.png");
     static readonly sleep = AssetBundle.createPath("Sleep.png");
     static readonly send = AssetBundle.createPath("Send.png");
+
+    // Items
+    static readonly apple = AssetBundle.createItemPath("Apple.png");
+    static readonly bomb = AssetBundle.createItemPath("Bomb.png");
+    static readonly boot = AssetBundle.createItemPath("Boot.png");
+    static readonly car = AssetBundle.createItemPath("Car.png");
+    static readonly cat = AssetBundle.createItemPath("Cat.png");
+    static readonly chip = AssetBundle.createItemPath("Chip.png");
+    static readonly clock = AssetBundle.createItemPath("Clock.png");
+    static readonly club = AssetBundle.createItemPath("Club.png");
+    static readonly dinner = AssetBundle.createItemPath("Dinner.png");
+    static readonly flameThrower = AssetBundle.createItemPath("FlameThrower.png");
+    static readonly flashlight = AssetBundle.createItemPath("Flashlight.png");
+    static readonly glass = AssetBundle.createItemPath("Glass.png");
+    static readonly glasses = AssetBundle.createItemPath("Glasses.png");
+    static readonly leg = AssetBundle.createItemPath("Leg.png");
+    static readonly lighter = AssetBundle.createItemPath("Lighter.png");
+    static readonly pen = AssetBundle.createItemPath("Pen.png");
+    static readonly perpetual = AssetBundle.createItemPath("Perpetual.png");
+    static readonly pipe = AssetBundle.createItemPath("Pipe.png");
+    static readonly robot = AssetBundle.createItemPath("Robot.png");
+    static readonly roller = AssetBundle.createItemPath("Roller.png");
+    static readonly sandwich = AssetBundle.createItemPath("Sandwich.png");
+    static readonly smoke = AssetBundle.createItemPath("Smoke.png");
+    static readonly spyglass = AssetBundle.createItemPath("Spyglass.png");
+    static readonly timeMachine = AssetBundle.createItemPath("TimeMachine.png");
+    static readonly unicorn = AssetBundle.createItemPath("Unicorn.png");
+
+
     private readonly imageUrls = [
-        AssetBundle.apple,
         AssetBundle.room,
         AssetBundle.town,
         AssetBundle.light,
@@ -31,11 +58,41 @@ class AssetBundle {
         AssetBundle.marker,
         AssetBundle.watchTv,
         AssetBundle.sleep,
-        AssetBundle.send
+        AssetBundle.send,
+
+        AssetBundle.apple,
+        AssetBundle.bomb,
+        AssetBundle.boot,
+        AssetBundle.car,
+        AssetBundle.cat,
+        AssetBundle.chip,
+        AssetBundle.clock,
+        AssetBundle.club,
+        AssetBundle.dinner,
+        AssetBundle.flameThrower,
+        AssetBundle.flashlight,
+        AssetBundle.glass,
+        AssetBundle.glasses,
+        AssetBundle.leg,
+        AssetBundle.lighter,
+        AssetBundle.pen,
+        AssetBundle.perpetual,
+        AssetBundle.pipe,
+        AssetBundle.robot,
+        AssetBundle.roller,
+        AssetBundle.sandwich,
+        AssetBundle.smoke,
+        AssetBundle.spyglass,
+        AssetBundle.timeMachine,
+        AssetBundle.unicorn
     ];
 
     private static createPath(file: string) {
         return `${this.assetFolder}/${file}`;
+    }
+
+    private static createItemPath(file: string) {
+        return `${this.assetFolder}/items/${file}`;
     }
 
     load() {

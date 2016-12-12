@@ -57,12 +57,12 @@ class Room extends Widget {
             "Good day, Artis@n! I have a great plan and I need",
             "a powerful weapon to accomplish it.",
             "Craft it quickly and quietly and I will buy it.");
-            messageBox.position.set(50, 335);
-        this.addChild(messageBox);
+        messageBox.position.set(50, 335);
+        //this.addChild(messageBox);
     }
 
     private onTvSpotInteract(item?: Item) {
-        const apple = this.createItem(ItemType.Apple);
+        const apple = this.createItem(ItemType.FlameThrower);
         this.addItem(apple);
     }
 
@@ -72,7 +72,7 @@ class Room extends Widget {
     }
 
     private onPostSpotInteract(item?: Item) {
-        const apple = this.createItem(ItemType.Apple);
+        const apple = this.createItem(ItemType.Perpetual);
         this.addItem(apple);
     }
 
