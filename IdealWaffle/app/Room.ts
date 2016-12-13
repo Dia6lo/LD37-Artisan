@@ -346,6 +346,7 @@ class Room extends Widget {
         if (this.currentQuestId === 0) {
             this.pipe.removeChild(this.pipe.children[1]);
             this.lighter.removeChild(this.lighter.children[1]);
+            this.itemHandPanel.showTips = false;
             QuestMessageBox.weapon = item;
         }
         if (this.currentQuestId === 5) {

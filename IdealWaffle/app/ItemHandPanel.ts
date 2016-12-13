@@ -4,11 +4,23 @@ class ItemHandPanel extends Widget {
     private itemHolder = new WidgetHolder();
     shownItem: DisplayableObject | undefined = undefined;
     frozen: boolean;
+    showTips = true;
+    private tipGroup = new Widget();
 
     constructor(private room: Room) {
         super();
         this.size.set(440, 100);
         this.pivot = Vector2.half;
+        const rightArrow = Sprite.fromImage(AssetBundle.arrow);
+        rightArrow.size.set(52, 18);
+        rightArrow.pivot.set(0, 0.5);
+        this.tipGroup.addChild(rightArrow);
+        const leftArrow = Sprite.fromImage(AssetBundle.arrow);
+        leftArrow.size.set(52, 18);
+        leftArrow.pivot.set(0, 0.5);
+        leftArrow.scale.set(-1, 1);
+        this.tipGroup.addChild(leftArrow);
+        this.addChild(this.tipGroup);
         this.rightHand.position.set(this.size.x, this.size.y / 2);
         this.rightHand.tasks.add(this.handMovementTask(this.rightHand, Key.X));
         this.addChild(this.rightHand);
@@ -18,6 +30,8 @@ class ItemHandPanel extends Widget {
         this.itemHolder.pivot = Vector2.half;
         this.itemHolder.position = this.size.divide(2);
         this.addChild(this.itemHolder);
+        rightArrow.position.set(this.rightHand.x - this.rightHand.width * 1.5, this.rightHand.y - this.rightHand.height / 2);
+        leftArrow.position.set(this.leftHand.x + this.rightHand.width * 0.5, this.rightHand.y - this.rightHand.height / 2);
     }
 
     showItem(item: DisplayableObject | undefined) {
@@ -37,6 +51,7 @@ class ItemHandPanel extends Widget {
         const speed = 15;
         let destination: number;
         while (true) {
+            this.tipGroup.opacity = this.showTips && hand.item && otherHand.item ? 1 : 0;
             if (this.frozen) {
                 yield Wait.frame();
                 continue;

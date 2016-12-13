@@ -17,6 +17,7 @@ class AssetBundle {
             AssetBundle.send,
             AssetBundle.piece,
             AssetBundle.craft,
+            AssetBundle.arrow,
             AssetBundle.boss,
             AssetBundle.goverment,
             AssetBundle.hero,
@@ -93,6 +94,7 @@ AssetBundle.sleep = AssetBundle.createPath("Sleep.png");
 AssetBundle.send = AssetBundle.createPath("Send.png");
 AssetBundle.piece = AssetBundle.createPath("Piece.png");
 AssetBundle.craft = AssetBundle.createPath("CraftBody.png");
+AssetBundle.arrow = AssetBundle.createPath("Arrow.png");
 AssetBundle.boss = AssetBundle.createPath("Boss.png");
 AssetBundle.goverment = AssetBundle.createPath("Goverment.png");
 AssetBundle.hero = AssetBundle.createPath("Hero.png");
@@ -566,8 +568,20 @@ class ItemHandPanel extends Widget {
         this.leftHand = new ItemHand(true);
         this.itemHolder = new WidgetHolder();
         this.shownItem = undefined;
+        this.showTips = true;
+        this.tipGroup = new Widget();
         this.size.set(440, 100);
         this.pivot = Vector2.half;
+        const rightArrow = Sprite.fromImage(AssetBundle.arrow);
+        rightArrow.size.set(52, 18);
+        rightArrow.pivot.set(0, 0.5);
+        this.tipGroup.addChild(rightArrow);
+        const leftArrow = Sprite.fromImage(AssetBundle.arrow);
+        leftArrow.size.set(52, 18);
+        leftArrow.pivot.set(0, 0.5);
+        leftArrow.scale.set(-1, 1);
+        this.tipGroup.addChild(leftArrow);
+        this.addChild(this.tipGroup);
         this.rightHand.position.set(this.size.x, this.size.y / 2);
         this.rightHand.tasks.add(this.handMovementTask(this.rightHand, 106));
         this.addChild(this.rightHand);
@@ -577,6 +591,8 @@ class ItemHandPanel extends Widget {
         this.itemHolder.pivot = Vector2.half;
         this.itemHolder.position = this.size.divide(2);
         this.addChild(this.itemHolder);
+        rightArrow.position.set(this.rightHand.x - this.rightHand.width * 1.5, this.rightHand.y - this.rightHand.height / 2);
+        leftArrow.position.set(this.leftHand.x + this.rightHand.width * 0.5, this.rightHand.y - this.rightHand.height / 2);
     }
     showItem(item) {
         if (item) {
@@ -594,6 +610,7 @@ class ItemHandPanel extends Widget {
         const speed = 15;
         let destination;
         while (true) {
+            this.tipGroup.opacity = this.showTips && hand.item && otherHand.item ? 1 : 0;
             if (this.frozen) {
                 yield Wait.frame();
                 continue;
@@ -1334,6 +1351,7 @@ class Room extends Widget {
         if (this.currentQuestId === 0) {
             this.pipe.removeChild(this.pipe.children[1]);
             this.lighter.removeChild(this.lighter.children[1]);
+            this.itemHandPanel.showTips = false;
             QuestMessageBox.weapon = item;
         }
         if (this.currentQuestId === 5) {
