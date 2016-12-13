@@ -64,7 +64,7 @@ class Quest {
                     "It works. Sometimes.",
                     "Usually, I don't have a time for finding bugs.",
                     "I appreciate your help."],
-                newsLine: "The new Cyberdogs will return escaped residents from dangerous wild to safety. *** Government decides to decrease taxes by 0.5% *** BREAKING NEWS: Cyberdogs have gone aggressive after release, avoid them at all costs!"
+                newsLine: "New Cyberdogs will return escaped residents from dangerous wild to safety. *** Government decides to decrease taxes by 0.5% *** BREAKING NEWS: Cyberdogs have gone aggressive after release, avoid them at all costs!"
             },
             {
                 items: [ItemType.Boot, ItemType.Car, ItemType.Clock, ItemType.Cat, ItemType.Glass],

@@ -958,7 +958,7 @@ class Quest {
                     "Usually, I don't have a time for finding bugs.",
                     "I appreciate your help."
                 ],
-                newsLine: "The new Cyberdogs will return escaped residents from dangerous wild to safety. *** Government decides to decrease taxes by 0.5% *** BREAKING NEWS: Cyberdogs have gone aggressive after release, avoid them at all costs!"
+                newsLine: "New Cyberdogs will return escaped residents from dangerous wild to safety. *** Government decides to decrease taxes by 0.5% *** BREAKING NEWS: Cyberdogs have gone aggressive after release, avoid them at all costs!"
             },
             {
                 items: [2, 3, 6, 4, 11],
@@ -1282,6 +1282,10 @@ class Room extends Widget {
         this.bedMarker.disable();
         this.tvMarker.enable();
         if (this.currentQuestId === 6) {
+            const items = this.items.slice();
+            for (let item of items) {
+                this.removeItem(item);
+            }
             for (let item of this.questItems) {
                 item.cartesianPosition = this.transformer.getRandomPosition();
                 item.position = this.transformer.toIsometric(item.cartesianPosition);

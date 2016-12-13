@@ -291,6 +291,10 @@ class Room extends Widget {
         this.bedMarker.disable();
         this.tvMarker.enable();
         if (this.currentQuestId === 6) {
+            const items = this.items.slice();
+            for (let item of items) {
+                this.removeItem(item);
+            }
             for (let item of this.questItems) {
                 item.cartesianPosition = this.transformer.getRandomPosition();
                 item.position = this.transformer.toIsometric(item.cartesianPosition);
