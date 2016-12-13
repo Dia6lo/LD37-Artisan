@@ -21,6 +21,7 @@ class AssetBundle {
     static readonly piece = AssetBundle.createPath("Piece.png");
     static readonly craft = AssetBundle.createPath("CraftBody.png");
     static readonly arrow = AssetBundle.createPath("Arrow.png");
+    static readonly armor = AssetBundle.createPath("Armor.png");
 
     // Faces
     static readonly boss = AssetBundle.createPath("Boss.png");
@@ -76,6 +77,7 @@ class AssetBundle {
         AssetBundle.piece,
         AssetBundle.craft,
         AssetBundle.arrow,
+        AssetBundle.armor,
 
         AssetBundle.boss,
         AssetBundle.goverment,

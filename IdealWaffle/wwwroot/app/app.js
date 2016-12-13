@@ -18,6 +18,7 @@ class AssetBundle {
             AssetBundle.piece,
             AssetBundle.craft,
             AssetBundle.arrow,
+            AssetBundle.armor,
             AssetBundle.boss,
             AssetBundle.goverment,
             AssetBundle.hero,
@@ -95,6 +96,7 @@ AssetBundle.send = AssetBundle.createPath("Send.png");
 AssetBundle.piece = AssetBundle.createPath("Piece.png");
 AssetBundle.craft = AssetBundle.createPath("CraftBody.png");
 AssetBundle.arrow = AssetBundle.createPath("Arrow.png");
+AssetBundle.armor = AssetBundle.createPath("Armor.png");
 AssetBundle.boss = AssetBundle.createPath("Boss.png");
 AssetBundle.goverment = AssetBundle.createPath("Goverment.png");
 AssetBundle.hero = AssetBundle.createPath("Hero.png");
@@ -1126,6 +1128,10 @@ class Room extends Widget {
     }
     onCarpetSpotInteract(item) {
         this.room.texture = Texture.fromImage(AssetBundle.room2);
+        const armor = Sprite.fromImage(AssetBundle.armor);
+        armor.position.set(282, 338);
+        armor.size.set(66, 58);
+        this.room.addChild(armor);
         this.questState = 5;
         return false;
     }

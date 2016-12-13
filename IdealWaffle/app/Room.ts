@@ -100,6 +100,10 @@ class Room extends Widget {
 
     private onCarpetSpotInteract(item?: Item) {
         this.room.texture = Texture.fromImage(AssetBundle.room2);
+        const armor = Sprite.fromImage(AssetBundle.armor);
+        armor.position.set(282, 338);
+        armor.size.set(66, 58);
+        this.room.addChild(armor);
         this.questState = QuestState.Assembling;
         return false;
     }
