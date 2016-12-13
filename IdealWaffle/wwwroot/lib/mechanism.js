@@ -14,22 +14,14 @@ class Application {
         window.onkeyup = event => this.onKeyUp(event);
     }
     onKeyDown(event) {
-        this.input.addKeyEvent(this.translateKey(event.code), true);
-        const evt = event || window.event;
-        const keyCode = evt.keyCode;
-        if (keyCode >= 37 && keyCode <= 40) {
-            return false;
-        }
-        return true;
+        const key = this.translateKey(event.code);
+        this.input.addKeyEvent(key, true);
+        return key === 0;
     }
     onKeyUp(event) {
-        this.input.addKeyEvent(this.translateKey(event.code), false);
-        const evt = event || window.event;
-        const keyCode = evt.keyCode;
-        if (keyCode >= 37 && keyCode <= 40) {
-            return false;
-        }
-        return true;
+        const key = this.translateKey(event.code);
+        this.input.addKeyEvent(key, false);
+        return key === 0;
     }
     handleAnimationFrame(time) {
         if (!this.time) {
