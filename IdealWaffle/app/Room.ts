@@ -3,7 +3,7 @@ class Room extends Widget {
     private player = new Player();
     private transformer = new PositionTransformer();
     private playerPosition = new Vector2(44, 65);
-    private characterSpeed = 0.3;
+    private characterSpeed = 0.35;
     private mousePosition: Vector2;
     private debug = new Label();
     private cityParallax = new CityParallax();

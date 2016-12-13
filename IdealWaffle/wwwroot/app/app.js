@@ -1120,7 +1120,7 @@ class Room extends Widget {
         this.player = new Player();
         this.transformer = new PositionTransformer();
         this.playerPosition = new Vector2(44, 65);
-        this.characterSpeed = 0.3;
+        this.characterSpeed = 0.35;
         this.debug = new Label();
         this.cityParallax = new CityParallax();
         this.items = [];
