@@ -442,10 +442,12 @@ class ItemFactory {
                 const match = (first.type === combo.pair.first && second.type === combo.pair.second) ||
                     (second.type === combo.pair.first && first.type === combo.pair.second);
                 if (match) {
+                    game.audio.play("assets/cool_connect.mp3");
                     return this.createItem(combo.result);
                 }
             }
         }
+        game.audio.play("assets/usual_connect.wav");
         return new CompoundItem([first, second]);
     }
     static createItem(type) {
@@ -1338,14 +1340,17 @@ class Room extends Widget {
     onPostSpotInteract(item) {
         if (this.questState !== 1) {
             this.addTip("No one needs my service now.");
+            game.audio.play("assets/incorrect.wav", false, 0.25);
             return false;
         }
         if (!item) {
             this.addTip("I need to send something.");
+            game.audio.play("assets/incorrect.wav", false, 0.25);
             return false;
         }
         if (!ItemFactory.isItemSpecial(item)) {
             this.addTip("This item is too simple.");
+            game.audio.play("assets/incorrect.wav", false, 0.25);
             return false;
         }
         if (this.currentQuestId === 0) {

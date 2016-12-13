@@ -333,14 +333,17 @@ class Room extends Widget {
     private onPostSpotInteract(item?: Item) {
         if (this.questState !== QuestState.Craft) {
             this.addTip("No one needs my service now.");
+            game.audio.play("assets/incorrect.wav", false, 0.25);
             return false;
         }
         if (!item) {
             this.addTip("I need to send something.");
+            game.audio.play("assets/incorrect.wav", false, 0.25);
             return false;
         }
         if (!ItemFactory.isItemSpecial(item)) {
             this.addTip("This item is too simple.");
+            game.audio.play("assets/incorrect.wav", false, 0.25);
             return false;
         }
         if (this.currentQuestId === 0) {

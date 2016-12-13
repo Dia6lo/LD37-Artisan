@@ -36,10 +36,12 @@ class ItemFactory {
                 const match = (first.type === combo.pair.first && second.type === combo.pair.second) ||
                     (second.type === combo.pair.first && first.type === combo.pair.second);
                 if (match) {
+                    game.audio.play("assets/cool_connect.mp3");
                     return this.createItem(combo.result);
                 }
             }
         }
+        game.audio.play("assets/usual_connect.wav");
         return new CompoundItem([first, second]);
     }
 
