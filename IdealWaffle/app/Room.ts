@@ -16,8 +16,11 @@ class Room extends Widget {
     private bedSpot = new SpecialSpot(Texture.fromImage(AssetBundle.sleep), "Go to bed");
     private postMarker = new Marker();
     private postSpot = new SpecialSpot(Texture.fromImage(AssetBundle.send), "Send requested item");
+    private carpetMarker = new Marker();
+    private carpetSpot = new SpecialSpot(Texture.fromImage(AssetBundle.piece), "Pull carpet");
+    private assembleSpot = new SpecialSpot(Texture.fromImage(AssetBundle.craft), "Setup Power Source");
     private quests = Quest.createStory();
-    private currentQuestId = 0;
+    private currentQuestId = 6;
     private questState = QuestState.Briefing;
     private movementBlocked = false;
     private tvOpened = false;
@@ -29,6 +32,8 @@ class Room extends Widget {
     private tip = new Tooltip("");
     private news: string[] = [];
     private newsLine = new Label();
+    private finalItems: Item[] = [];//this.createItem(ItemType.Apple), this.createItem(ItemType.Apple), this.createItem(ItemType.Apple), this.createItem(ItemType.Apple), this.createItem(ItemType.Apple)];
+    private assemblingStage = 0;
 
     constructor() {
         super();
@@ -65,6 +70,10 @@ class Room extends Widget {
         this.setupMarker(this.postMarker, 725, 320);
         this.postMarker.disable();
         this.postSpot.oninteract = item => this.onPostSpotInteract(item);
+        this.setupMarker(this.carpetMarker, 325, 350);
+        this.carpetMarker.disable();
+        this.carpetSpot.oninteract = item => this.onCarpetSpotInteract(item);
+        this.assembleSpot.oninteract = item => this.onAssembleSpotInteract(item);
         this.spawnQuestItems();
         this.addChild(this.messageLayer);
         this.addChild(this.fadeScreen);
@@ -76,6 +85,47 @@ class Room extends Widget {
         this.tasks.add(this.showTipTask());
         this.tasks.add(this.showNewsTask());
         game.audio.play("assets/ArtisanFixed.mp3", true, 0.75);
+        this.addItem(this.createItem(ItemType.Apple));
+    }
+
+    private onCarpetSpotInteract(item?: Item) {
+        this.room.texture = Texture.fromImage(AssetBundle.room2);
+        this.questState = QuestState.Assembling;
+        return false;
+    }
+
+    private onAssembleSpotInteract(item?: Item) {
+        if (item) {
+            this.finalItems.push(item);
+            this.assemblingStage++;
+            let text = "";
+            switch (this.assemblingStage) {
+                case 1:
+                    text = "Insert Computing element";
+                    break;
+                case 2:
+                    text = "Insert Vision system";
+                    break;
+                case 3:
+                    text = "Insert Movement device";
+                    break;
+                case 4:
+                    text = "Insert Weapon";
+                    break;
+                case 5:
+                    text = "Add Miracle Component";
+                    break;
+                default: {
+                    this.itemHandPanel.frozen = true;
+                    this.fadeScreen.setupEnding(this.finalItems);
+                    this.fadeScreen.fadeIn();
+                }
+            }
+            this.assembleSpot.text = text;
+            return true;
+        }
+        this.addTip("I need something to insert here.");
+        return false;
     }
 
     addTip(tip: string) {
@@ -170,10 +220,10 @@ class Room extends Widget {
             this.tvMessage.opacity = 0;
         }
         else {
-            if (this.currentQuestId === 6) {
-                this.itemHandPanel.frozen = true;
-                this.fadeScreen.setupEnding();
-                this.fadeScreen.fadeIn();
+            if (this.currentQuestId === 6 && this.questState === QuestState.Briefing) {
+                this.questState = QuestState.Carpet;
+                this.tvMarker.disable();
+                this.carpetMarker.enable();
                 return false;
             }
             this.tvMessage.tasks.add(this.slideOutMessage(this.tvMessage));
@@ -241,7 +291,16 @@ class Room extends Widget {
         this.questState = QuestState.Briefing;
         this.bedMarker.disable();
         this.tvMarker.enable();
-        this.spawnQuestItems();
+        if (this.currentQuestId === 6) {
+            for (let item of this.questItems) {
+                item.cartesianPosition = this.transformer.getRandomPosition();
+                item.position = this.transformer.toIsometric(item.cartesianPosition);
+                this.addItem(item);
+            }
+        }
+        else {
+            this.spawnQuestItems();
+        }
         yield Wait.seconds(1);
         this.fadeScreen.fadeOut();
         yield Wait.seconds(0.5);
@@ -338,7 +397,7 @@ class Room extends Widget {
         const pressed = this.movementBlocked ? [] : controls.filter(key => game.input.isKeyPressed(key));
         let direction = Vector2.zero;
         for (let key of pressed) {
-            direction = direction.add(this.getVelocityDirection(key));
+            direction = direction.add(this.getVelocityDirection(key!));
         }
         direction.x = Math.abs(direction.x) === 1 ? direction.x * 0.75 : direction.x;
         direction.y = Math.abs(direction.y) === 1 ? direction.y * 0.75 : direction.y;
@@ -381,7 +440,9 @@ class Room extends Widget {
         if (
             this.setSpecialSpotIfPossible(this.transformer.tv, this.tvSpot) ||
             this.setSpecialSpotIfPossible(this.transformer.bed, this.bedSpot) ||
-            this.setSpecialSpotIfPossible(this.transformer.post, this.postSpot)
+            this.setSpecialSpotIfPossible(this.transformer.post, this.postSpot) ||
+            (this.currentQuestId === 6 && this.questState === QuestState.Carpet && this.setSpecialSpotIfPossible(new Rectangle(20, 50, 40, 65), this.carpetSpot)) ||
+            (this.currentQuestId === 6 && this.questState === QuestState.Assembling && this.setSpecialSpotIfPossible(new Rectangle(20, 50, 40, 65), this.assembleSpot))
         ) {
             return;
         }
@@ -403,7 +464,7 @@ class Room extends Widget {
         const direction = center.subtract(this.playerPosition);
         const length = direction.length;
         const unit = direction.divide(length);
-        return obstacle.contains(this.playerPosition.add(unit));
+        return obstacle.contains(this.playerPosition.add(unit)) || obstacle.contains(this.playerPosition);
     }
 
     private updateParallax() {

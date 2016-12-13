@@ -23,7 +23,7 @@
         }
     }
 
-    setupEnding() {
+    setupEnding(items: Item[]) {
         const center = this.rendererSize.divide(2);
         this.removeChild(this.label);
         const textLabel = this.createLabel("I will make dreams come true. In a city that should not exist.");

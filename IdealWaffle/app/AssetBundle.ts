@@ -6,6 +6,7 @@ class AssetBundle {
 
     private static readonly assetFolder = "assets";
     static readonly room = AssetBundle.createPath("Room.png");
+    static readonly room2 = AssetBundle.createPath("Room2.png");
     static readonly town = AssetBundle.createPath("Town.png");
     static readonly light = AssetBundle.createPath("Light.png");
     static readonly playerIdleSheet = AssetBundle.createPath("PlayerIdleSheet.png");
@@ -17,6 +18,8 @@ class AssetBundle {
     static readonly watchTv = AssetBundle.createPath("WatchTV.png");
     static readonly sleep = AssetBundle.createPath("Sleep.png");
     static readonly send = AssetBundle.createPath("Send.png");
+    static readonly piece = AssetBundle.createPath("Piece.png");
+    static readonly craft = AssetBundle.createPath("CraftBody.png");
 
     // Faces
     static readonly boss = AssetBundle.createPath("Boss.png");
@@ -57,6 +60,7 @@ class AssetBundle {
 
     private readonly imageUrls = [
         AssetBundle.room,
+        AssetBundle.room2,
         AssetBundle.town,
         AssetBundle.light,
         AssetBundle.playerIdleSheet,
@@ -68,6 +72,8 @@ class AssetBundle {
         AssetBundle.watchTv,
         AssetBundle.sleep,
         AssetBundle.send,
+        AssetBundle.piece,
+        AssetBundle.craft,
 
         AssetBundle.boss,
         AssetBundle.goverment,

@@ -92,7 +92,7 @@ class Quest {
                     "",
                     "",
                     ""],
-                newsLine: "Situation is under control. Chemical leak has been fixed. If you feel an aggression attacks drink a lot of water. *** Please stay away from sharp objects."
+                newsLine: "Situation is under control. Chemical leak has been fixed. If you feel an aggression attack - drink a lot of water. *** Please stay away from sharp objects."
             },
             {
                 items: [],
@@ -107,7 +107,7 @@ class Quest {
                     "",
                     ""],
                 newsLine: ""
-            },
+            }
         ];
     }
 }

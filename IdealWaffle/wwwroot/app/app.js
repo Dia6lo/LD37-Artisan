@@ -3,6 +3,7 @@ class AssetBundle {
         this.loadedHost = ObservableEventHost.create();
         this.imageUrls = [
             AssetBundle.room,
+            AssetBundle.room2,
             AssetBundle.town,
             AssetBundle.light,
             AssetBundle.playerIdleSheet,
@@ -14,6 +15,8 @@ class AssetBundle {
             AssetBundle.watchTv,
             AssetBundle.sleep,
             AssetBundle.send,
+            AssetBundle.piece,
+            AssetBundle.craft,
             AssetBundle.boss,
             AssetBundle.goverment,
             AssetBundle.hero,
@@ -76,6 +79,7 @@ class AssetBundle {
 }
 AssetBundle.assetFolder = "assets";
 AssetBundle.room = AssetBundle.createPath("Room.png");
+AssetBundle.room2 = AssetBundle.createPath("Room2.png");
 AssetBundle.town = AssetBundle.createPath("Town.png");
 AssetBundle.light = AssetBundle.createPath("Light.png");
 AssetBundle.playerIdleSheet = AssetBundle.createPath("PlayerIdleSheet.png");
@@ -87,6 +91,8 @@ AssetBundle.marker = AssetBundle.createPath("Marker.png");
 AssetBundle.watchTv = AssetBundle.createPath("WatchTV.png");
 AssetBundle.sleep = AssetBundle.createPath("Sleep.png");
 AssetBundle.send = AssetBundle.createPath("Send.png");
+AssetBundle.piece = AssetBundle.createPath("Piece.png");
+AssetBundle.craft = AssetBundle.createPath("CraftBody.png");
 AssetBundle.boss = AssetBundle.createPath("Boss.png");
 AssetBundle.goverment = AssetBundle.createPath("Goverment.png");
 AssetBundle.hero = AssetBundle.createPath("Hero.png");
@@ -228,7 +234,7 @@ class FadeScreen extends Widget {
             yield Wait.seconds(0.5);
         }
     }
-    setupEnding() {
+    setupEnding(items) {
         const center = this.rendererSize.divide(2);
         this.removeChild(this.label);
         const textLabel = this.createLabel("I will make dreams come true. In a city that should not exist.");
@@ -898,7 +904,7 @@ class Quest {
                     "",
                     ""
                 ],
-                newsLine: "Situation is under control. Chemical leak has been fixed. If you feel an aggression attacks drink a lot of water. *** Please stay away from sharp objects."
+                newsLine: "Situation is under control. Chemical leak has been fixed. If you feel an aggression attack - drink a lot of water. *** Please stay away from sharp objects."
             },
             {
                 items: [],
@@ -915,7 +921,7 @@ class Quest {
                     ""
                 ],
                 newsLine: ""
-            },
+            }
         ];
     }
 }
@@ -937,8 +943,11 @@ class Room extends Widget {
         this.bedSpot = new SpecialSpot(Texture.fromImage(AssetBundle.sleep), "Go to bed");
         this.postMarker = new Marker();
         this.postSpot = new SpecialSpot(Texture.fromImage(AssetBundle.send), "Send requested item");
+        this.carpetMarker = new Marker();
+        this.carpetSpot = new SpecialSpot(Texture.fromImage(AssetBundle.piece), "Pull carpet");
+        this.assembleSpot = new SpecialSpot(Texture.fromImage(AssetBundle.craft), "Setup Power Source");
         this.quests = Quest.createStory();
-        this.currentQuestId = 0;
+        this.currentQuestId = 6;
         this.questState = 0;
         this.movementBlocked = false;
         this.tvOpened = false;
@@ -949,6 +958,8 @@ class Room extends Widget {
         this.tip = new Tooltip("");
         this.news = [];
         this.newsLine = new Label();
+        this.finalItems = [];
+        this.assemblingStage = 0;
         this.onScreen = new Vector2(50, 335);
         this.offScreen = new Vector2(50, 600);
         this.itemHandPanel = new ItemHandPanel(this);
@@ -983,6 +994,10 @@ class Room extends Widget {
         this.setupMarker(this.postMarker, 725, 320);
         this.postMarker.disable();
         this.postSpot.oninteract = item => this.onPostSpotInteract(item);
+        this.setupMarker(this.carpetMarker, 325, 350);
+        this.carpetMarker.disable();
+        this.carpetSpot.oninteract = item => this.onCarpetSpotInteract(item);
+        this.assembleSpot.oninteract = item => this.onAssembleSpotInteract(item);
         this.spawnQuestItems();
         this.addChild(this.messageLayer);
         this.addChild(this.fadeScreen);
@@ -994,6 +1009,45 @@ class Room extends Widget {
         this.tasks.add(this.showTipTask());
         this.tasks.add(this.showNewsTask());
         game.audio.play("assets/ArtisanFixed.mp3", true, 0.75);
+        this.addItem(this.createItem(0));
+    }
+    onCarpetSpotInteract(item) {
+        this.room.texture = Texture.fromImage(AssetBundle.room2);
+        this.questState = 5;
+        return false;
+    }
+    onAssembleSpotInteract(item) {
+        if (item) {
+            this.finalItems.push(item);
+            this.assemblingStage++;
+            let text = "";
+            switch (this.assemblingStage) {
+                case 1:
+                    text = "Insert Computing element";
+                    break;
+                case 2:
+                    text = "Insert Vision system";
+                    break;
+                case 3:
+                    text = "Insert Movement device";
+                    break;
+                case 4:
+                    text = "Insert Weapon";
+                    break;
+                case 5:
+                    text = "Add Miracle Component";
+                    break;
+                default: {
+                    this.itemHandPanel.frozen = true;
+                    this.fadeScreen.setupEnding(this.finalItems);
+                    this.fadeScreen.fadeIn();
+                }
+            }
+            this.assembleSpot.text = text;
+            return true;
+        }
+        this.addTip("I need something to insert here.");
+        return false;
     }
     addTip(tip) {
         if (this.tips.filter(t => t === tip).length === 0) {
@@ -1079,10 +1133,10 @@ class Room extends Widget {
             this.tvMessage.opacity = 0;
         }
         else {
-            if (this.currentQuestId === 6) {
-                this.itemHandPanel.frozen = true;
-                this.fadeScreen.setupEnding();
-                this.fadeScreen.fadeIn();
+            if (this.currentQuestId === 6 && this.questState === 0) {
+                this.questState = 4;
+                this.tvMarker.disable();
+                this.carpetMarker.enable();
                 return false;
             }
             this.tvMessage.tasks.add(this.slideOutMessage(this.tvMessage));
@@ -1142,7 +1196,16 @@ class Room extends Widget {
         this.questState = 0;
         this.bedMarker.disable();
         this.tvMarker.enable();
-        this.spawnQuestItems();
+        if (this.currentQuestId === 6) {
+            for (let item of this.questItems) {
+                item.cartesianPosition = this.transformer.getRandomPosition();
+                item.position = this.transformer.toIsometric(item.cartesianPosition);
+                this.addItem(item);
+            }
+        }
+        else {
+            this.spawnQuestItems();
+        }
         yield Wait.seconds(1);
         this.fadeScreen.fadeOut();
         yield Wait.seconds(0.5);
@@ -1273,7 +1336,9 @@ class Room extends Widget {
         }
         if (this.setSpecialSpotIfPossible(this.transformer.tv, this.tvSpot) ||
             this.setSpecialSpotIfPossible(this.transformer.bed, this.bedSpot) ||
-            this.setSpecialSpotIfPossible(this.transformer.post, this.postSpot)) {
+            this.setSpecialSpotIfPossible(this.transformer.post, this.postSpot) ||
+            (this.currentQuestId === 6 && this.questState === 4 && this.setSpecialSpotIfPossible(new Rectangle(20, 50, 40, 65), this.carpetSpot)) ||
+            (this.currentQuestId === 6 && this.questState === 5 && this.setSpecialSpotIfPossible(new Rectangle(20, 50, 40, 65), this.assembleSpot))) {
             return;
         }
         this.itemHandPanel.showItem(undefined);
@@ -1292,7 +1357,7 @@ class Room extends Widget {
         const direction = center.subtract(this.playerPosition);
         const length = direction.length;
         const unit = direction.divide(length);
-        return obstacle.contains(this.playerPosition.add(unit));
+        return obstacle.contains(this.playerPosition.add(unit)) || obstacle.contains(this.playerPosition);
     }
     updateParallax() {
         const leftX = this.transformer.isometricLeft.x;

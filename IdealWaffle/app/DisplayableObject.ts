@@ -18,7 +18,7 @@ class SpecialSpot extends DisplayableObject {
     }
 
     set text(value: string) {
-        this.displayView.text = value;
+        (this.displayView as PanelObjectView).text = value;
     }
 }
 

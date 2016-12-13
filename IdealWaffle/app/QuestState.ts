@@ -2,5 +2,7 @@ const enum QuestState {
     Briefing,
     Craft,
     Debriefing,
-    Sleep
+    Sleep,
+    Carpet,
+    Assembling
 }
