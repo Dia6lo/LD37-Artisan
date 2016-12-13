@@ -6,6 +6,12 @@ class ItemHandPanel extends Widget {
     frozen: boolean;
     showTips = true;
     private tipGroup = new Widget();
+    private firstZ = true;
+    private firstX = true;
+    private firstCraft = true;
+    private firstCraftUnique = true;
+    private firstCraftCompound = true;
+    private firstDisassemble = true;
 
     constructor(private room: Room) {
         super();
@@ -91,12 +97,28 @@ class ItemHandPanel extends Widget {
                                 const item = otherHand.item;
                                 this.leftHand.holdItem(item.parts[0]);
                                 this.rightHand.holdItem(item.parts[1]);
+                                if (this.firstDisassemble) {
+                                    const trackProperties = game.room.trackProperties;
+                                    trackProperties["item"] = item.name;
+                                    trackEvent("first_disassemble", trackProperties);
+                                    this.firstDisassemble = false;
+                                }
                             }
                             else if (this.shownItem && this.shownItem.pickable) {
                                 const item = this.shownItem as Item;
                                 hand.holdItem(item);
                                 this.showItem(undefined);
                                 item.onpickup();
+                                const trackProperties = game.room.trackProperties;
+                                trackProperties["item"] = item.name;
+                                if (key === Key.X && this.firstX) {
+                                    trackFlowEvent("first_item_right", trackProperties);
+                                    this.firstX = false;
+                                }
+                                else if (key === Key.Z && this.firstZ) {
+                                    trackFlowEvent("first_item_left", trackProperties);
+                                    this.firstZ = false;
+                                }
                             }
                             if (hand.x === otherHand.x && !otherHand.item) {
                                 game.audio.play("assets/hlop.mp3");
@@ -104,10 +126,26 @@ class ItemHandPanel extends Widget {
                         }
                         else {
                             if (hand.x === otherHand.x && otherHand.item) {
-                                const newItem = ItemFactory.mergeItems(this.leftHand.item!, this.rightHand.item!);
+                                const left = this.leftHand.item!;
+                                const right = this.rightHand.item!;
+                                const newItem = ItemFactory.mergeItems(left, right);
                                 this.room.setupItem(newItem);
                                 this.rightHand.holdItem(undefined);
                                 this.leftHand.holdItem(newItem);
+                                const trackProperties = game.room.trackProperties;
+                                trackProperties["item"] = newItem.name;
+                                if (this.firstCraft) {
+                                    trackFlowEvent("first_craft", trackProperties);
+                                    this.firstCraft = false;
+                                }
+                                if (newItem instanceof SimpleItem && this.firstCraftUnique) {
+                                    trackEvent("first_craft_unique", trackProperties);
+                                    this.firstCraftUnique = false;
+                                }
+                                if (newItem instanceof CompoundItem && this.firstCraftCompound) {
+                                    trackEvent("first_craft_compound", trackProperties);
+                                    this.firstCraftCompound = false;
+                                }
                             }
                             /*else if (this.shownItem) {
                                 const newItem = ItemFactory.mergeItems(hand.item, this.shownItem as Item);

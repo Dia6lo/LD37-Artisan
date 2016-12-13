@@ -35,7 +35,9 @@ class Room extends Widget {
     private finalItems: Item[] = [];
     private assemblingStage = 0;
     private pipe: Item;
+    private pipeMarker: Marker;
     private lighter: Item;
+    private lighterMarker: Marker;
 
     constructor() {
         super();
@@ -105,11 +107,24 @@ class Room extends Widget {
         armor.size.set(66, 58);
         this.room.addChild(armor);
         this.questState = QuestState.Assembling;
+        trackFlowEvent("pull_carpet", this.trackProperties);
         return false;
+    }
+
+    get trackProperties() {
+        return { "global_stage": this.globalStageId.toString(), "stage": this.questState.toString(), "quest": this.currentQuestId.toString() };
+    }
+
+    private get globalStageId() {
+        return this.currentQuestId * 3 + this.questState;
     }
 
     private onAssembleSpotInteract(item?: Item) {
         if (item) {
+            let trackProperties = this.trackProperties;
+            trackProperties["assemble_stage"] = this.assemblingStage.toString();
+            trackProperties["item"] = item.name;
+            trackFlowEvent("assemble", trackProperties);
             this.finalItems.push(item);
             this.assemblingStage++;
             let text = "";
@@ -131,6 +146,14 @@ class Room extends Widget {
                     break;
                 default: {
                     this.itemHandPanel.frozen = true;
+                    trackProperties = this.trackProperties;
+                    trackProperties["power"] = this.finalItems[0].name;
+                    trackProperties["computing"] = this.finalItems[0].name;
+                    trackProperties["vision"] = this.finalItems[0].name;
+                    trackProperties["movement"] = this.finalItems[0].name;
+                    trackProperties["weapon"] = this.finalItems[0].name;
+                    trackProperties["miracle"] = this.finalItems[0].name;
+                    trackEvent("assembled_items", trackProperties);
                     this.fadeScreen.setupEnding(this.finalItems);
                     this.fadeScreen.fadeIn();
                 }
@@ -218,6 +241,7 @@ class Room extends Widget {
 
     private onTvSpotInteract(item?: Item) {
         if (this.tvMessage && this.tvMessage.tasks.length !== 0) {
+            trackEvent("force_close_terminal", this.trackProperties);
             return false;
         }
         if (this.currentQuestId === 5 &&
@@ -232,6 +256,7 @@ class Room extends Widget {
             this.tasks.add(this.slideInMessage(this.tvMessage));
             this.messageLayer.addChild(this.tvMessage);
             this.tvMessage.opacity = 0;
+            trackFlowEvent("open_terminal", this.trackProperties);
         }
         else {
             if (this.currentQuestId === 6 && this.questState === QuestState.Briefing) {
@@ -241,6 +266,7 @@ class Room extends Widget {
                 return false;
             }
             this.tvMessage.tasks.add(this.slideOutMessage(this.tvMessage));
+            trackFlowEvent("close_terminal", this.trackProperties);
         }
         return false;
     }
@@ -271,13 +297,13 @@ class Room extends Widget {
             this.tvMarker.disable();
             this.bedMarker.enable();
         }
-        if (this.currentQuestId === 0 && this.pipe.children.length <= 1) {
-            let marker = new Marker();
-            marker.start = new Vector2(-3, -42);
-            this.pipe.addChild(marker);
-            marker = new Marker();
-            marker.start = new Vector2(-3, -42);
-            this.lighter.addChild(marker);
+        if (this.currentQuestId === 0 && !this.pipeMarker) {
+            this.pipeMarker= new Marker();
+            this.pipeMarker.start = new Vector2(-3, -42);
+            this.pipe.addChild(this.pipeMarker);
+            this.lighterMarker = new Marker();
+            this.lighterMarker.start = new Vector2(-3, -42);
+            this.lighter.addChild(this.lighterMarker);
         }
         this.tvSpot.text = "Read last message";
     }
@@ -295,12 +321,13 @@ class Room extends Widget {
             this.addTip("I don't want to sleep yet.");
             return false;
         }
+        trackFlowEvent("sleep", this.trackProperties);
+        trackEvent("end_quest", this.trackProperties);
         this.tasks.add(this.sleepTask());
         return false;
     }
 
     private *sleepTask() {
-        appInsights.trackEvent("interact_bed", { quest: this.currentQuestId.toString() });
         this.movementBlocked = true;
         this.itemHandPanel.frozen = true;
         this.fadeScreen.text = "Sleeping";
@@ -346,14 +373,19 @@ class Room extends Widget {
             game.audio.play("assets/incorrect.wav", false, 0.25);
             return false;
         }
+        const trackProperties = this.trackProperties;
+        trackProperties["item"] = item.name;
         if (!ItemFactory.isItemSpecial(item)) {
             this.addTip("This item is too simple.");
+            trackEvent("post_simple_item", trackProperties);
             game.audio.play("assets/incorrect.wav", false, 0.25);
             return false;
         }
         if (this.currentQuestId === 0) {
-            this.pipe.removeChild(this.pipe.children[1]);
-            this.lighter.removeChild(this.lighter.children[1]);
+            if (this.pipeMarker) {
+                this.pipe.removeChild(this.pipeMarker);
+                this.lighter.removeChild(this.lighterMarker);
+            }
             this.itemHandPanel.showTips = false;
             QuestMessageBox.weapon = item;
         }
@@ -369,6 +401,7 @@ class Room extends Widget {
             this.tvMarker.enable();
             this.questState = QuestState.Debriefing;
         }
+        trackFlowEvent("post_item", trackProperties);
         this.questItems.push(item);
         return true;
     }

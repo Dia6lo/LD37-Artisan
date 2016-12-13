@@ -121,6 +121,10 @@
             if (this.labelGroup.y > start - path) {
                 this.labelGroup.y -= 0.5;
             }
+            else {
+                trackEvent("outro_end");
+                break;
+            }
             yield Wait.frame();
         }
     }

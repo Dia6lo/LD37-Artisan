@@ -329,6 +329,10 @@ class FadeScreen extends Widget {
             if (this.labelGroup.y > start - path) {
                 this.labelGroup.y -= 0.5;
             }
+            else {
+                trackEvent("outro_end");
+                break;
+            }
             yield Wait.frame();
         }
     }
@@ -381,20 +385,55 @@ class Game extends Application {
         this.renderer.imageSmoothing = false;
     }
     run() {
-        this.root = new Room();
+        this.room = new Room();
+        this.root = this.room;
         super.run();
         const assetLoadEvent = "asset_loading";
-        assets.loaded.subscribe(() => { appInsights.stopTrackEvent(assetLoadEvent); });
+        assets.loaded.subscribe(() => {
+            appInsights.stopTrackEvent(assetLoadEvent);
+            timer.reset();
+        });
         assets.load();
         appInsights.startTrackEvent(assetLoadEvent);
     }
     setPixelFont(size) {
         this.renderer.context.font = `${size}px tooltipFont`;
     }
+    update(delta) {
+        timer.add(delta);
+        super.update(delta);
+    }
 }
 Game.neon = Color.fromComponents(41, 196, 191);
+class Timer {
+    constructor() {
+        this.total = 0;
+        this.last = 0;
+    }
+    add(seconds) {
+        this.total += seconds;
+        this.last += seconds;
+    }
+    reset() {
+        this.last = 0;
+    }
+}
+var timer = new Timer();
 var assets = new AssetBundle();
 var game;
+var trackEvent = (name, properties, measurements) => {
+    appInsights.trackEvent(name, properties, measurements);
+};
+var trackFlowEvent = (name, properties, measurements) => {
+    if (!measurements) {
+        measurements = {};
+    }
+    measurements["event_time"] = timer.total;
+    measurements["total_time"] = timer.last;
+    console.debug(`${timer.last} ${timer.total}`);
+    timer.reset();
+    appInsights.trackEvent(name, properties, measurements);
+};
 window.onload = () => {
     game = new Game();
     document.body.appendChild(game.view);
@@ -577,6 +616,12 @@ class ItemHandPanel extends Widget {
         this.shownItem = undefined;
         this.showTips = true;
         this.tipGroup = new Widget();
+        this.firstZ = true;
+        this.firstX = true;
+        this.firstCraft = true;
+        this.firstCraftUnique = true;
+        this.firstCraftCompound = true;
+        this.firstDisassemble = true;
         this.size.set(440, 100);
         this.pivot = Vector2.half;
         const rightArrow = Sprite.fromImage(AssetBundle.arrow);
@@ -657,12 +702,28 @@ class ItemHandPanel extends Widget {
                                 const item = otherHand.item;
                                 this.leftHand.holdItem(item.parts[0]);
                                 this.rightHand.holdItem(item.parts[1]);
+                                if (this.firstDisassemble) {
+                                    const trackProperties = game.room.trackProperties;
+                                    trackProperties["item"] = item.name;
+                                    trackEvent("first_disassemble", trackProperties);
+                                    this.firstDisassemble = false;
+                                }
                             }
                             else if (this.shownItem && this.shownItem.pickable) {
                                 const item = this.shownItem;
                                 hand.holdItem(item);
                                 this.showItem(undefined);
                                 item.onpickup();
+                                const trackProperties = game.room.trackProperties;
+                                trackProperties["item"] = item.name;
+                                if (key === 106 && this.firstX) {
+                                    trackFlowEvent("first_item_right", trackProperties);
+                                    this.firstX = false;
+                                }
+                                else if (key === 108 && this.firstZ) {
+                                    trackFlowEvent("first_item_left", trackProperties);
+                                    this.firstZ = false;
+                                }
                             }
                             if (hand.x === otherHand.x && !otherHand.item) {
                                 game.audio.play("assets/hlop.mp3");
@@ -670,10 +731,26 @@ class ItemHandPanel extends Widget {
                         }
                         else {
                             if (hand.x === otherHand.x && otherHand.item) {
-                                const newItem = ItemFactory.mergeItems(this.leftHand.item, this.rightHand.item);
+                                const left = this.leftHand.item;
+                                const right = this.rightHand.item;
+                                const newItem = ItemFactory.mergeItems(left, right);
                                 this.room.setupItem(newItem);
                                 this.rightHand.holdItem(undefined);
                                 this.leftHand.holdItem(newItem);
+                                const trackProperties = game.room.trackProperties;
+                                trackProperties["item"] = newItem.name;
+                                if (this.firstCraft) {
+                                    trackFlowEvent("first_craft", trackProperties);
+                                    this.firstCraft = false;
+                                }
+                                if (newItem instanceof SimpleItem && this.firstCraftUnique) {
+                                    trackEvent("first_craft_unique", trackProperties);
+                                    this.firstCraftUnique = false;
+                                }
+                                if (newItem instanceof CompoundItem && this.firstCraftCompound) {
+                                    trackEvent("first_craft_compound", trackProperties);
+                                    this.firstCraftCompound = false;
+                                }
                             }
                         }
                     }
@@ -1136,10 +1213,21 @@ class Room extends Widget {
         armor.size.set(66, 58);
         this.room.addChild(armor);
         this.questState = 5;
+        trackFlowEvent("pull_carpet", this.trackProperties);
         return false;
+    }
+    get trackProperties() {
+        return { "global_stage": this.globalStageId.toString(), "stage": this.questState.toString(), "quest": this.currentQuestId.toString() };
+    }
+    get globalStageId() {
+        return this.currentQuestId * 3 + this.questState;
     }
     onAssembleSpotInteract(item) {
         if (item) {
+            let trackProperties = this.trackProperties;
+            trackProperties["assemble_stage"] = this.assemblingStage.toString();
+            trackProperties["item"] = item.name;
+            trackFlowEvent("assemble", trackProperties);
             this.finalItems.push(item);
             this.assemblingStage++;
             let text = "";
@@ -1161,6 +1249,14 @@ class Room extends Widget {
                     break;
                 default: {
                     this.itemHandPanel.frozen = true;
+                    trackProperties = this.trackProperties;
+                    trackProperties["power"] = this.finalItems[0].name;
+                    trackProperties["computing"] = this.finalItems[0].name;
+                    trackProperties["vision"] = this.finalItems[0].name;
+                    trackProperties["movement"] = this.finalItems[0].name;
+                    trackProperties["weapon"] = this.finalItems[0].name;
+                    trackProperties["miracle"] = this.finalItems[0].name;
+                    trackEvent("assembled_items", trackProperties);
                     this.fadeScreen.setupEnding(this.finalItems);
                     this.fadeScreen.fadeIn();
                 }
@@ -1239,6 +1335,7 @@ class Room extends Widget {
     }
     onTvSpotInteract(item) {
         if (this.tvMessage && this.tvMessage.tasks.length !== 0) {
+            trackEvent("force_close_terminal", this.trackProperties);
             return false;
         }
         if (this.currentQuestId === 5 &&
@@ -1253,6 +1350,7 @@ class Room extends Widget {
             this.tasks.add(this.slideInMessage(this.tvMessage));
             this.messageLayer.addChild(this.tvMessage);
             this.tvMessage.opacity = 0;
+            trackFlowEvent("open_terminal", this.trackProperties);
         }
         else {
             if (this.currentQuestId === 6 && this.questState === 0) {
@@ -1262,6 +1360,7 @@ class Room extends Widget {
                 return false;
             }
             this.tvMessage.tasks.add(this.slideOutMessage(this.tvMessage));
+            trackFlowEvent("close_terminal", this.trackProperties);
         }
         return false;
     }
@@ -1287,13 +1386,13 @@ class Room extends Widget {
             this.tvMarker.disable();
             this.bedMarker.enable();
         }
-        if (this.currentQuestId === 0 && this.pipe.children.length <= 1) {
-            let marker = new Marker();
-            marker.start = new Vector2(-3, -42);
-            this.pipe.addChild(marker);
-            marker = new Marker();
-            marker.start = new Vector2(-3, -42);
-            this.lighter.addChild(marker);
+        if (this.currentQuestId === 0 && !this.pipeMarker) {
+            this.pipeMarker = new Marker();
+            this.pipeMarker.start = new Vector2(-3, -42);
+            this.pipe.addChild(this.pipeMarker);
+            this.lighterMarker = new Marker();
+            this.lighterMarker.start = new Vector2(-3, -42);
+            this.lighter.addChild(this.lighterMarker);
         }
         this.tvSpot.text = "Read last message";
     }
@@ -1309,11 +1408,12 @@ class Room extends Widget {
             this.addTip("I don't want to sleep yet.");
             return false;
         }
+        trackFlowEvent("sleep", this.trackProperties);
+        trackEvent("end_quest", this.trackProperties);
         this.tasks.add(this.sleepTask());
         return false;
     }
     *sleepTask() {
-        appInsights.trackEvent("interact_bed", { quest: this.currentQuestId.toString() });
         this.movementBlocked = true;
         this.itemHandPanel.frozen = true;
         this.fadeScreen.text = "Sleeping";
@@ -1358,14 +1458,19 @@ class Room extends Widget {
             game.audio.play("assets/incorrect.wav", false, 0.25);
             return false;
         }
+        const trackProperties = this.trackProperties;
+        trackProperties["item"] = item.name;
         if (!ItemFactory.isItemSpecial(item)) {
             this.addTip("This item is too simple.");
+            trackEvent("post_simple_item", trackProperties);
             game.audio.play("assets/incorrect.wav", false, 0.25);
             return false;
         }
         if (this.currentQuestId === 0) {
-            this.pipe.removeChild(this.pipe.children[1]);
-            this.lighter.removeChild(this.lighter.children[1]);
+            if (this.pipeMarker) {
+                this.pipe.removeChild(this.pipeMarker);
+                this.lighter.removeChild(this.lighterMarker);
+            }
             this.itemHandPanel.showTips = false;
             QuestMessageBox.weapon = item;
         }
@@ -1381,6 +1486,7 @@ class Room extends Widget {
             this.tvMarker.enable();
             this.questState = 2;
         }
+        trackFlowEvent("post_item", trackProperties);
         this.questItems.push(item);
         return true;
     }
