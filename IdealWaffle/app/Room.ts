@@ -300,6 +300,7 @@ class Room extends Widget {
     }
 
     private *sleepTask() {
+        appInsights.trackEvent("interact_bed", { quest: this.currentQuestId.toString() });
         this.movementBlocked = true;
         this.itemHandPanel.frozen = true;
         this.fadeScreen.text = "Sleeping";

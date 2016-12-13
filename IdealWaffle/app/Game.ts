@@ -11,7 +11,10 @@
     run(): void {
         this.root = new Room();
         super.run();
+        const assetLoadEvent = "asset_loading";
+        assets.loaded.subscribe(() => { appInsights.stopTrackEvent(assetLoadEvent) });
         assets.load();
+        appInsights.startTrackEvent(assetLoadEvent);
     }
 
     setPixelFont(size: number) {

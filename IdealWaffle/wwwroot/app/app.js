@@ -383,7 +383,10 @@ class Game extends Application {
     run() {
         this.root = new Room();
         super.run();
+        const assetLoadEvent = "asset_loading";
+        assets.loaded.subscribe(() => { appInsights.stopTrackEvent(assetLoadEvent); });
         assets.load();
+        appInsights.startTrackEvent(assetLoadEvent);
     }
     setPixelFont(size) {
         this.renderer.context.font = `${size}px tooltipFont`;
@@ -1310,6 +1313,7 @@ class Room extends Widget {
         return false;
     }
     *sleepTask() {
+        appInsights.trackEvent("interact_bed", { quest: this.currentQuestId.toString() });
         this.movementBlocked = true;
         this.itemHandPanel.frozen = true;
         this.fadeScreen.text = "Sleeping";
