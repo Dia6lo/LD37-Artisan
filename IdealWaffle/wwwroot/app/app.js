@@ -331,6 +331,7 @@ class FadeScreen extends Widget {
             }
             else {
                 trackEvent("outro_end");
+                appInsights.flush();
                 break;
             }
             yield Wait.frame();
@@ -1258,6 +1259,7 @@ class Room extends Widget {
                     trackProperties["miracle"] = this.finalItems[0].name;
                     trackEvent("assembled_items", trackProperties);
                     this.fadeScreen.setupEnding(this.finalItems);
+                    appInsights.flush();
                     this.fadeScreen.fadeIn();
                 }
             }

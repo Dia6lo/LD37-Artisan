@@ -123,6 +123,7 @@
             }
             else {
                 trackEvent("outro_end");
+                appInsights.flush();
                 break;
             }
             yield Wait.frame();
