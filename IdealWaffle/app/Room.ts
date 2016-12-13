@@ -271,7 +271,7 @@ class Room extends Widget {
             this.tvMarker.disable();
             this.bedMarker.enable();
         }
-        if (this.currentQuestId === 0 && this.pipe.children.length <= 2) {
+        if (this.currentQuestId === 0 && this.pipe.children.length <= 1) {
             let marker = new Marker();
             marker.start = new Vector2(-3, -42);
             this.pipe.addChild(marker);
