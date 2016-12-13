@@ -148,11 +148,11 @@ class Room extends Widget {
                     this.itemHandPanel.frozen = true;
                     trackProperties = this.trackProperties;
                     trackProperties["power"] = this.finalItems[0].name;
-                    trackProperties["computing"] = this.finalItems[0].name;
-                    trackProperties["vision"] = this.finalItems[0].name;
-                    trackProperties["movement"] = this.finalItems[0].name;
-                    trackProperties["weapon"] = this.finalItems[0].name;
-                    trackProperties["miracle"] = this.finalItems[0].name;
+                    trackProperties["computing"] = this.finalItems[1].name;
+                    trackProperties["vision"] = this.finalItems[2].name;
+                    trackProperties["movement"] = this.finalItems[3].name;
+                    trackProperties["weapon"] = this.finalItems[4].name;
+                    trackProperties["miracle"] = this.finalItems[5].name;
                     trackEvent("assembled_items", trackProperties);
                     this.fadeScreen.setupEnding(this.finalItems);
                     appInsights.flush();
