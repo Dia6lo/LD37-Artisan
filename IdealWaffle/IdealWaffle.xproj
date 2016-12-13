@@ -15,6 +15,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <SchemaVersion>2.0</SchemaVersion>
+    <ApplicationInsightsResourceId>/subscriptions/40e47f23-41c7-428d-abf7-f6c37c42a6c9/resourcegroups/LudumDare/providers/microsoft.insights/components/idealwaffle</ApplicationInsightsResourceId>
   </PropertyGroup>
   <ItemGroup>
     <DnxInvisibleContent Include="bower.json" />
