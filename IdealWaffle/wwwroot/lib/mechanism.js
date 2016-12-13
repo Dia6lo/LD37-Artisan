@@ -15,9 +15,21 @@ class Application {
     }
     onKeyDown(event) {
         this.input.addKeyEvent(this.translateKey(event.code), true);
+        const evt = event || window.event;
+        const keyCode = evt.keyCode;
+        if (keyCode >= 37 && keyCode <= 40) {
+            return false;
+        }
+        return true;
     }
     onKeyUp(event) {
         this.input.addKeyEvent(this.translateKey(event.code), false);
+        const evt = event || window.event;
+        const keyCode = evt.keyCode;
+        if (keyCode >= 37 && keyCode <= 40) {
+            return false;
+        }
+        return true;
     }
     handleAnimationFrame(time) {
         if (!this.time) {
