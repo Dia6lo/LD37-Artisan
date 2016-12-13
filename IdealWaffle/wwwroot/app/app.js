@@ -217,6 +217,10 @@ class FadeScreen extends Widget {
         super();
         this.rendererSize = rendererSize;
         this.text = "Loading";
+        this.labelGroup = new Widget();
+        this.startLabelGroup = new Widget();
+        this.centerLabelGroup = new Widget();
+        this.endLabelGroup = new Widget();
         this.label = this.createLabel();
         this.label.position = rendererSize.divide(2);
         this.addChild(this.label);
@@ -237,12 +241,92 @@ class FadeScreen extends Widget {
     setupEnding(items) {
         const center = this.rendererSize.divide(2);
         this.removeChild(this.label);
-        const textLabel = this.createLabel("I will make dreams come true. In a city that should not exist.");
-        textLabel.position = center.subtract(new Vector2(0, 18));
-        this.addChild(textLabel);
-        const gameOverLabel = this.createLabel("Game over?");
-        gameOverLabel.position = center.add(new Vector2(0, 18));
-        this.addChild(gameOverLabel);
+        let f = this.format;
+        let label = this.createLabel("Today the legend was born.");
+        this.startLabelGroup.addChild(label);
+        let start = Vector2.zero;
+        label = this.createLabel("Evil can't hide from his");
+        this.centerLabelGroup.addChild(label);
+        label.position = start.clone();
+        start.y += 36;
+        label = this.createLabel(items[2].name);
+        this.centerLabelGroup.addChild(label);
+        label.position = start.clone();
+        start.y += 36;
+        label = this.createLabel("It can't run away from the speed of his");
+        this.centerLabelGroup.addChild(label);
+        label.position = start.clone();
+        start.y += 36;
+        label = this.createLabel(items[3].name);
+        this.centerLabelGroup.addChild(label);
+        label.position = start.clone();
+        start.y += 36;
+        label = this.createLabel("And any mistakes will be fixed by his");
+        this.centerLabelGroup.addChild(label);
+        label.position = start.clone();
+        start.y += 36;
+        label = this.createLabel(items[5].name);
+        this.centerLabelGroup.addChild(label);
+        label.position = start.clone();
+        start.y += 72;
+        label = this.createLabel("Magma flows in his veins by the power of the");
+        this.centerLabelGroup.addChild(label);
+        label.position = start.clone();
+        start.y += 36;
+        label = this.createLabel(items[0].name);
+        this.centerLabelGroup.addChild(label);
+        label.position = start.clone();
+        start.y += 36;
+        label = this.createLabel("He solves all main problems of humanity with his brilliant");
+        this.centerLabelGroup.addChild(label);
+        label.position = start.clone();
+        start.y += 36;
+        label = this.createLabel(items[1].name);
+        this.centerLabelGroup.addChild(label);
+        label.position = start.clone();
+        start.y += 36;
+        label = this.createLabel("And he brings justice by his legendary");
+        this.centerLabelGroup.addChild(label);
+        label.position = start.clone();
+        start.y += 36;
+        label = this.createLabel(items[4].name);
+        this.centerLabelGroup.addChild(label);
+        label.position = start.clone();
+        start.y += 36;
+        start = Vector2.zero;
+        label = this.createLabel("I will make dreams come true.");
+        this.endLabelGroup.addChild(label);
+        label.position = start.clone();
+        start.y += 36;
+        label = this.createLabel("In a city that should not exist.");
+        this.endLabelGroup.addChild(label);
+        label.position = start.clone();
+        this.labelGroup.addChild(this.startLabelGroup);
+        this.labelGroup.addChild(this.centerLabelGroup);
+        this.centerLabelGroup.y = center.y;
+        this.centerLabelGroup.opacity = 0;
+        this.labelGroup.addChild(this.endLabelGroup);
+        this.endLabelGroup.y = center.y + 725;
+        this.endLabelGroup.opacity = 0;
+        this.labelGroup.position = center.clone();
+        this.addChild(this.labelGroup);
+        this.tasks.add(this.moveEndingTask());
+    }
+    format(text, data) {
+        return text.replace("{0}", data);
+    }
+    *moveEndingTask() {
+        const path = 1025;
+        const start = this.labelGroup.y;
+        yield Wait.seconds(2);
+        this.centerLabelGroup.opacity = 1;
+        this.endLabelGroup.opacity = 1;
+        while (true) {
+            if (this.labelGroup.y > start - path) {
+                this.labelGroup.y -= 0.5;
+            }
+            yield Wait.frame();
+        }
     }
     createLabel(text) {
         const label = new Label(text);
@@ -274,10 +358,12 @@ class FadeScreen extends Widget {
         this.label.size = size;
         renderer.save();
         game.setPixelFont(32);
-        for (let child of this.children) {
-            if (child instanceof Label) {
-                child.width = renderer.measureText(child.text);
-                child.height = 32;
+        for (let parent of this.labelGroup.children) {
+            for (let child of parent.children) {
+                if (child instanceof Label) {
+                    child.width = renderer.measureText(child.text);
+                    child.height = 32;
+                }
             }
         }
         super.render(renderer);
@@ -947,7 +1033,7 @@ class Room extends Widget {
         this.carpetSpot = new SpecialSpot(Texture.fromImage(AssetBundle.piece), "Pull carpet");
         this.assembleSpot = new SpecialSpot(Texture.fromImage(AssetBundle.craft), "Setup Power Source");
         this.quests = Quest.createStory();
-        this.currentQuestId = 6;
+        this.currentQuestId = 0;
         this.questState = 0;
         this.movementBlocked = false;
         this.tvOpened = false;
@@ -1009,7 +1095,6 @@ class Room extends Widget {
         this.tasks.add(this.showTipTask());
         this.tasks.add(this.showNewsTask());
         game.audio.play("assets/ArtisanFixed.mp3", true, 0.75);
-        this.addItem(this.createItem(0));
     }
     onCarpetSpotInteract(item) {
         this.room.texture = Texture.fromImage(AssetBundle.room2);

@@ -1,6 +1,10 @@
 ﻿class FadeScreen extends Widget {
     private readonly label;
     text = "Loading";
+    private readonly labelGroup = new Widget();
+    private readonly startLabelGroup = new Widget();
+    private readonly centerLabelGroup = new Widget();
+    private readonly endLabelGroup = new Widget();
 
     constructor(private readonly rendererSize: Vector2) {
         super();
@@ -26,12 +30,99 @@
     setupEnding(items: Item[]) {
         const center = this.rendererSize.divide(2);
         this.removeChild(this.label);
-        const textLabel = this.createLabel("I will make dreams come true. In a city that should not exist.");
-        textLabel.position = center.subtract(new Vector2(0, 18));
-        this.addChild(textLabel);
-        const gameOverLabel = this.createLabel("Game over?");
-        gameOverLabel.position = center.add(new Vector2(0, 18));
-        this.addChild(gameOverLabel);
+        let f = this.format;
+
+        let label = this.createLabel("Today the legend was born.");
+        this.startLabelGroup.addChild(label);
+
+        let start = Vector2.zero;
+        label = this.createLabel("Evil can't hide from his");
+        this.centerLabelGroup.addChild(label);
+        label.position = start.clone();
+        start.y += 36;
+        label = this.createLabel(items[2].name);
+        this.centerLabelGroup.addChild(label);
+        label.position = start.clone();
+        start.y += 36;
+        label = this.createLabel("It can't run away from the speed of his");
+        this.centerLabelGroup.addChild(label);
+        label.position = start.clone();
+        start.y += 36;
+        label = this.createLabel(items[3].name);
+        this.centerLabelGroup.addChild(label);
+        label.position = start.clone();
+        start.y += 36;
+        label = this.createLabel("And any mistakes will be fixed by his");
+        this.centerLabelGroup.addChild(label);
+        label.position = start.clone();
+        start.y += 36;
+        label = this.createLabel(items[5].name);
+        this.centerLabelGroup.addChild(label);
+        label.position = start.clone();
+        start.y += 72;
+
+        label = this.createLabel("Magma flows in his veins by the power of the");
+        this.centerLabelGroup.addChild(label);
+        label.position = start.clone();
+        start.y += 36;
+        label = this.createLabel(items[0].name);
+        this.centerLabelGroup.addChild(label);
+        label.position = start.clone();
+        start.y += 36;
+        label = this.createLabel("He solves all main problems of humanity with his brilliant");
+        this.centerLabelGroup.addChild(label);
+        label.position = start.clone();
+        start.y += 36;
+        label = this.createLabel(items[1].name);
+        this.centerLabelGroup.addChild(label);
+        label.position = start.clone();
+        start.y += 36;
+        label = this.createLabel("And he brings justice by his legendary");
+        this.centerLabelGroup.addChild(label);
+        label.position = start.clone();
+        start.y += 36;
+        label = this.createLabel(items[4].name);
+        this.centerLabelGroup.addChild(label);
+        label.position = start.clone();
+        start.y += 36;
+
+        start = Vector2.zero;
+        label = this.createLabel("I will make dreams come true.");
+        this.endLabelGroup.addChild(label);
+        label.position = start.clone();
+        start.y += 36;
+        label = this.createLabel("In a city that should not exist.");
+        this.endLabelGroup.addChild(label);
+        label.position = start.clone();
+
+        this.labelGroup.addChild(this.startLabelGroup);
+        this.labelGroup.addChild(this.centerLabelGroup);
+        this.centerLabelGroup.y = center.y;
+        this.centerLabelGroup.opacity = 0;
+        this.labelGroup.addChild(this.endLabelGroup);
+        this.endLabelGroup.y = center.y + 725;
+        this.endLabelGroup.opacity = 0;
+        this.labelGroup.position = center.clone();
+        this.addChild(this.labelGroup);
+        this.tasks.add(this.moveEndingTask());
+    }
+
+    private format(text: string, data: string) {
+        return text.replace("{0}", data);
+    }
+
+    private *moveEndingTask() {
+        const path = 1025;
+        const start = this.labelGroup.y;
+        yield Wait.seconds(2);
+        this.centerLabelGroup.opacity = 1;
+        this.endLabelGroup.opacity = 1;
+        while (true) {
+            if (this.labelGroup.y > start - path) {
+                this.labelGroup.y -= 0.5;
+            }
+            yield Wait.frame();
+        }
     }
 
     private createLabel(text?: string) {
@@ -68,10 +159,12 @@
         this.label.size = size;
         renderer.save();
         game.setPixelFont(32);
-        for (let child of this.children) {
-            if (child instanceof Label) {
-                child.width = renderer.measureText(child.text);
-                child.height = 32;
+        for (let parent of this.labelGroup.children) {
+            for (let child of parent.children) {
+                if (child instanceof Label) {
+                    child.width = renderer.measureText(child.text);
+                    child.height = 32;
+                }
             }
         }
         super.render(renderer);

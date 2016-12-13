@@ -20,7 +20,7 @@ class Room extends Widget {
     private carpetSpot = new SpecialSpot(Texture.fromImage(AssetBundle.piece), "Pull carpet");
     private assembleSpot = new SpecialSpot(Texture.fromImage(AssetBundle.craft), "Setup Power Source");
     private quests = Quest.createStory();
-    private currentQuestId = 6;
+    private currentQuestId = 0;
     private questState = QuestState.Briefing;
     private movementBlocked = false;
     private tvOpened = false;
@@ -32,7 +32,7 @@ class Room extends Widget {
     private tip = new Tooltip("");
     private news: string[] = [];
     private newsLine = new Label();
-    private finalItems: Item[] = [];//this.createItem(ItemType.Apple), this.createItem(ItemType.Apple), this.createItem(ItemType.Apple), this.createItem(ItemType.Apple), this.createItem(ItemType.Apple)];
+    private finalItems: Item[] = [];
     private assemblingStage = 0;
 
     constructor() {
@@ -85,7 +85,6 @@ class Room extends Widget {
         this.tasks.add(this.showTipTask());
         this.tasks.add(this.showNewsTask());
         game.audio.play("assets/ArtisanFixed.mp3", true, 0.75);
-        this.addItem(this.createItem(ItemType.Apple));
     }
 
     private onCarpetSpotInteract(item?: Item) {
