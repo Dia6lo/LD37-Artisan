@@ -34,6 +34,8 @@ class Room extends Widget {
     private newsLine = new Label();
     private finalItems: Item[] = [];
     private assemblingStage = 0;
+    private pipe: Item;
+    private lighter: Item;
 
     constructor() {
         super();
@@ -75,6 +77,15 @@ class Room extends Widget {
         this.carpetSpot.oninteract = item => this.onCarpetSpotInteract(item);
         this.assembleSpot.oninteract = item => this.onAssembleSpotInteract(item);
         this.spawnQuestItems();
+        for (let item of this.items) {
+            const simpleItem = item as SimpleItem;
+            if (simpleItem.type === ItemType.Pipe) {
+                this.pipe = item;
+            }
+            if (simpleItem.type === ItemType.Lighter) {
+                this.lighter = item;
+            }
+        }
         this.addChild(this.messageLayer);
         this.addChild(this.fadeScreen);
         assets.loaded.subscribe(this.onAssetsLoaded, this);
@@ -256,6 +267,14 @@ class Room extends Widget {
             this.tvMarker.disable();
             this.bedMarker.enable();
         }
+        if (this.currentQuestId === 0 && this.pipe.children.length <= 2) {
+            let marker = new Marker();
+            marker.start = new Vector2(-3, -42);
+            this.pipe.addChild(marker);
+            marker = new Marker();
+            marker.start = new Vector2(-3, -42);
+            this.lighter.addChild(marker);
+        }
         this.tvSpot.text = "Read last message";
     }
 
@@ -325,6 +344,8 @@ class Room extends Widget {
             return false;
         }
         if (this.currentQuestId === 0) {
+            this.pipe.removeChild(this.pipe.children[1]);
+            this.lighter.removeChild(this.lighter.children[1]);
             QuestMessageBox.weapon = item;
         }
         if (this.currentQuestId === 5) {
