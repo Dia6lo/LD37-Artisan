@@ -818,7 +818,7 @@ class Player extends Widget {
         this.stepSound = game.audio.play("assets/steps.mp3", true, 0);
         this.size = this.widgetSize;
         this.setupAnimation(this.idleSpriteSheet, 4, 15);
-        this.setupAnimation(this.walkSpriteSheet, 8, 12);
+        this.setupAnimation(this.walkSpriteSheet, 8, 8);
         this.runIdleAnimation();
         this.addChild(this.spriteHolder);
     }
@@ -1120,7 +1120,7 @@ class Room extends Widget {
         this.player = new Player();
         this.transformer = new PositionTransformer();
         this.playerPosition = new Vector2(44, 65);
-        this.characterSpeed = 0.35;
+        this.characterSpeed = 0.45;
         this.debug = new Label();
         this.cityParallax = new CityParallax();
         this.items = [];
