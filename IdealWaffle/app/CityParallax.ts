@@ -1,8 +1,8 @@
 class CityParallax extends Widget {
     private readonly texture = Texture.fromImage(AssetBundle.town);
     private readonly clipSize = new Vector2(136, 56);
-    private readonly parallaxSize = new Vector2(39, 10);
-    private readonly clipStartOffset = new Vector2(19.5, 5);
+    private readonly parallaxSize = new Vector2(32, 8);
+    private readonly clipStartOffset = new Vector2(23, 6);
     offset = Vector2.zero;
 
     constructor() {

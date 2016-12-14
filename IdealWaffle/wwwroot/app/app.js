@@ -135,8 +135,8 @@ class CityParallax extends Widget {
         super();
         this.texture = Texture.fromImage(AssetBundle.town);
         this.clipSize = new Vector2(136, 56);
-        this.parallaxSize = new Vector2(39, 10);
-        this.clipStartOffset = new Vector2(19.5, 5);
+        this.parallaxSize = new Vector2(32, 8);
+        this.clipStartOffset = new Vector2(23, 6);
         this.offset = Vector2.zero;
     }
     render(renderer) {
