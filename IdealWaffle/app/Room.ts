@@ -20,8 +20,8 @@ class Room extends Widget {
     private carpetSpot = new SpecialSpot(Texture.fromImage(AssetBundle.piece), "Pull carpet");
     private assembleSpot = new SpecialSpot(Texture.fromImage(AssetBundle.craft), "Setup Power Source");
     private quests = Quest.createStory();
-    private currentQuestId = 0;
-    private questState = QuestState.Briefing;
+    currentQuestId = 0;
+    questState = QuestState.Briefing;
     private movementBlocked = false;
     private tvOpened = false;
     private tvMessage: MessageBox;

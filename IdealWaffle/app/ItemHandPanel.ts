@@ -94,6 +94,15 @@ class ItemHandPanel extends Widget {
                         }
                         else if (!hand.item) {
                             if (hand.x === otherHand.x && otherHand.item && otherHand.item instanceof CompoundItem) {
+                                if (game.room.currentQuestId === 6) {
+                                    if (game.room.questState !== QuestState.Assembling) {
+                                        game.room.addTip("I should look at terminal first.");
+                                    }
+                                    else {
+                                        game.room.addTip("I need to create a new body from this.");
+                                    }
+                                    continue;
+                                }
                                 const item = otherHand.item;
                                 this.leftHand.holdItem(item.parts[0]);
                                 this.rightHand.holdItem(item.parts[1]);
@@ -126,6 +135,15 @@ class ItemHandPanel extends Widget {
                         }
                         else {
                             if (hand.x === otherHand.x && otherHand.item) {
+                                if (game.room.currentQuestId === 6) {
+                                    if (game.room.questState !== QuestState.Assembling) {
+                                        game.room.addTip("I should look at terminal first.");
+                                    }
+                                    else {
+                                        game.room.addTip("I need to create a new body from these.");
+                                    }
+                                    continue;
+                                }
                                 const left = this.leftHand.item!;
                                 const right = this.rightHand.item!;
                                 const newItem = ItemFactory.mergeItems(left, right);

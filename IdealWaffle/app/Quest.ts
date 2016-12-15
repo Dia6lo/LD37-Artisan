@@ -103,9 +103,9 @@ class Quest {
                     "Do you have a shadow? Guess what? We are both dead.",
                     "But I know a Genius that can craft a body for us ;)"],
                 debriefing: [
-                    "",
-                    "",
-                    ""],
+                    "Good unending night, ghost. Can you leave the room?",
+                    "Do you have a shadow? Guess what? We are both dead.",
+                    "But I know a Genius that can craft a body for us ;)"],
                 newsLine: ""
             }
         ];
