@@ -1,2 +1,2 @@
-# ideal-waffle-ld37
-LD 37 entry.
+# Artis@n
+Ludum Dare 37 entry.
